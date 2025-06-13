@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google'; // Import GoogleOAuthProvider
 
 import Login from './Components/Login/Login';
 import AdminDashboard from './Components/Dashboard/AdminDashboard';
@@ -73,11 +74,16 @@ function AppContent() {
 export default function App() {
   const queryClient = new QueryClient();
 
+  // Replace with your actual Google Client ID
+  const GOOGLE_CLIENT_ID = '910635849979-cohqci9jcn8mjcp7nbsrcdl7tf2ailqb.apps.googleusercontent.com';
+
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </GoogleOAuthProvider>
     </QueryClientProvider>
   );
 }

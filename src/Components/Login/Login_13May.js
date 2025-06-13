@@ -5,9 +5,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import logo from '../../Asset/images/company logo.png';
-import { baseUrl } from "../APIServices/APIServices";
-import { GoogleLogin } from '@react-oauth/google'; // Import GoogleLogin
+import logo from '../../Asset/images/company logo.png'; // Add your logo path here
+import { baseUrl } from "../APIServices/APIServices"; // Set your backend API URL here
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,21 +15,6 @@ const Login = () => {
   const [error, setError] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
-
-  const handleLoginSuccess = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    toast.success('Login successful');
-
-    setTimeout(() => {
-      if (userData.role === 'admin') {
-        navigate('/admin-dashboard');
-      } else if (userData.role === 'teamlead') {
-        navigate('/teamlead-dashboard');
-      } else {
-        navigate('/');
-      }
-    }, 200);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,8 +30,35 @@ const Login = () => {
 
       const data = await res.json();
 
+      // Debug: Log the response to check if we are getting the expected data
+      console.log(data);
+
       if (data.status === 'success') {
-        handleLoginSuccess(data);
+        // Save user details to localStorage
+        localStorage.setItem('user', JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          role: data.role
+      }));
+      
+
+      console.log(data);
+
+        toast.success('Login successful');
+
+
+        // Ensure redirection happens after a short delay to allow state updates
+        setTimeout(() => {
+          // Redirect based on role
+          if (data.role === 'admin') {
+            navigate('/admin-dashboard');
+          } else if (data.role === 'teamlead') {
+            navigate('/teamlead-dashboard');
+          } else {
+             navigate('/');
+          }
+        }, 200); // Small delay to ensure state updates
       } else {
         setError(data.message);
         toast.error(data.message || 'Login failed');
@@ -55,54 +66,9 @@ const Login = () => {
     } catch (err) {
       console.error('Login error:', err);
       toast.error('Something went wrong!');
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch(`${baseUrl}/google_login.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ credential: credentialResponse.credential })
-      });
-
-      // First check if the response is JSON
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await res.text();
-        throw new Error(`Server returned unexpected response: ${text.substring(0, 100)}`);
-      }
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || `HTTP error! status: ${res.status}`);
-      }
-
-      if (data.status === 'success') {
-        handleLoginSuccess(data.data); // Note we're using data.data now
-      } else {
-        throw new Error(data.message || 'Authentication failed');
-      }
-    } catch (err) {
-      console.error('Google login error:', err);
-      toast.error(err.message || 'Google login failed. Please try again.');
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleFailure = (error) => {
-    console.error('Google login failed:', error);
-    toast.error('Google login failed. Please try again.');
+    setLoading(false);
   };
 
   const togglePasswordVisibility = () => {
@@ -143,19 +109,6 @@ const Login = () => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-
-        <div className="or-separator">
-          <span>OR</span>
-        </div>
-
-        <div className="google-login-button-container">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-            useOneTap // This might help with the popup issues
-            ux_mode="popup" // Explicitly set to popup mode
-          />
-        </div>
       </div>
       <ToastContainer />
     </div>

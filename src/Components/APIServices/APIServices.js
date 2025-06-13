@@ -1,4 +1,4 @@
- const baseUrl= "http://localhost/project-list/Backend"; 
+ const baseUrl= "http://localhost/project_list_backend"; 
 //  const baseUrl= "http://69.62.76.211:85"; 
 
 // const webhookUrl = "http://localhost:4000";
