@@ -14,6 +14,7 @@ import {
 
 import { baseUrl } from "../APIServices/APIServices";
 import "./AdminDashboard.css";
+import axios from "axios";
 
 ChartJS.register(
   CategoryScale,
@@ -110,6 +111,7 @@ const AdminDashboard = () => {
     setSelectedProject(project);
     setShowModal(true);
 
+    // Fetching status history
     try {
       const response = await fetch(
         `${baseUrl}/getProjectStatusHistory.php?projectId=${project.project_id}`
@@ -121,12 +123,35 @@ const AdminDashboard = () => {
       console.error("Error fetching project status history:", error);
       setStatusHistory([]);
     }
+
+    // Fetching comments
+    fetchComments(project.project_id);
+  };
+
+
+  const [comments, setComments] = useState([]);
+  const fetchComments = async (projectId) => {
+    try {
+      const response = await axios.post(`${baseUrl}/get_comments.php`, {
+        project_id: projectId
+      });
+
+      if (response.data.status === "success") {
+        setComments(response.data.data);
+      } else {
+        alert("Failed to fetch comments.");
+      }
+    } catch (error) {
+      console.error("Fetch comments error:", error);
+      alert("Error fetching comments.");
+    }
   };
 
   const closeModal = () => {
     setSelectedProject(null);
     setShowModal(false);
     setStatusHistory([]);
+    setComments([]); // Clear comments when closing the modal
   };
 
   const weekLabels =
@@ -272,6 +297,8 @@ const AdminDashboard = () => {
     { title: "Projects Inprogress", count: inprogressCount, bgClass: "bg-secondary" },
   ];
 
+
+
   return (
     <div className="AdminDashboard-container">
       <div className="container-fluid px-4">
@@ -321,6 +348,7 @@ const AdminDashboard = () => {
                 <div className={`card ${colorClass} text-white`} style={{ borderRadius: "0px" }}>
                   <div className="card-body">
                     <h5 className="card-title">{project.project_name}</h5>
+                    <h5 className="card-title">{project.project_id}</h5>
                     <p className="card-text">{displayText}</p>
                   </div>
                 </div>
@@ -422,6 +450,46 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                  <div className="mt-4">
+                    <h5>Project Comments</h5>
+                    {comments.length === 0 ? (
+                      <p>No comments available.</p>
+                    ) : (
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>S No</th>
+                            <th>Comment</th>
+                            <th>Commented By</th>
+                            <th>Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {comments.map((comment, index) => (
+                            <tr key={index}>
+                              <td>{index + 1}</td>
+                              <td>{comment.comment}</td>
+                              <td>{comment.name || "N/A"}</td>
+                              <td>
+                                {comment.created_at
+                                  ? new Date(comment.created_at).toLocaleString("en-IN", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                    timeZone: "Asia/Kolkata",
+                                  })
+                                  : "N/A"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
                 </div>
 
                 <div className="modal-footer">

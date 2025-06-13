@@ -3,7 +3,9 @@ import axios from "axios";
 import { baseUrl } from "../../Components/APIServices/APIServices"; // Ensure the baseUrl is correctly set
 import "./ProjectDetails.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrashAlt, faComment, faComments } from "@fortawesome/free-solid-svg-icons";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 const ProjectDetails = () => {
   const [projects, setProjects] = useState([]);
@@ -177,6 +179,67 @@ const ProjectDetails = () => {
     );
   });
 
+
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const [selectedProjectForComment, setSelectedProjectForComment] = useState(null);
+  const [showViewCommentsModal, setShowViewCommentsModal] = useState(false);
+
+  const fetchComments = async (projectId) => {
+    try {
+      const response = await axios.post(`${baseUrl}/get_comments.php`, {
+        project_id: projectId
+      });
+
+      if (response.data.status === "success") {
+        setComments(response.data.data);
+      } else {
+        alert("Failed to fetch comments.");
+      }
+    } catch (error) {
+      console.error("Fetch comments error:", error);
+      alert("Error fetching comments.");
+    }
+  };
+
+  // Handle adding a new comment
+  const handleAddComment = async () => {
+    try {
+      const response = await axios.post(`${baseUrl}/add_comment.php`, {
+        project_id: selectedProjectForComment.id,
+        comment: comment,
+        user_id: user?.id,
+        name: user?.name
+      });
+
+      if (response.data.status === "success") {
+        alert("Comment added successfully");
+        setComment("");
+        setShowCommentModal(false);
+        fetchComments(selectedProjectForComment.id); // Refresh comments
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Add comment error:", error);
+      alert("Error adding comment");
+    }
+  };
+
+  // Open comment modal for a specific project
+  const handleCommentClick = (project) => {
+    setSelectedProjectForComment(project);
+    setShowCommentModal(true);
+  };
+
+  // Open view comments modal for a specific project
+  const handleViewComments = async (project) => {
+    setSelectedProjectForComment(project);
+    await fetchComments(project.id);
+    setShowViewCommentsModal(true);
+  };
+
   return (
     <div className="project-details-container">
       <div className="project-details-header row justify-content-center">
@@ -220,6 +283,7 @@ const ProjectDetails = () => {
                 {(role === "teamlead" || role === "admin") && (
                   <th>Change Status</th>
                 )}
+                <th>Comments</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -250,6 +314,21 @@ const ProjectDetails = () => {
                       </button>
                     </td>
                   )}
+
+                  <td>
+                    <button
+                      className="btn btn-info btn-sm me-2"
+                      onClick={() => handleCommentClick(project)}
+                    >
+                      Add
+                    </button>
+                    {/* <button
+                      className="btn btn-info btn-sm"
+                      onClick={() => handleViewComments(project)}
+                    >
+                      <FontAwesomeIcon icon={faComments} /> View
+                    </button> */}
+                  </td>
                   <td className="d-flex justify-content-start mt-3">
                     <button
                       className="btn btn-warning btn-sm me-2"
@@ -651,6 +730,64 @@ const ProjectDetails = () => {
           </div>
         </div>
       )}
+
+
+      <Modal show={showCommentModal} onHide={() => setShowCommentModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Comment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="form-group">
+            <label>Comment:</label>
+            <textarea
+              className="form-control"
+              rows="4"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              required
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCommentModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleAddComment}>
+            Save Comment
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* View Comments Modal */}
+      <Modal show={showViewCommentsModal} onHide={() => setShowViewCommentsModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Comments for {selectedProjectForComment?.project_name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {comments.length > 0 ? (
+            <div className="comment-list">
+              {comments.map((comment, index) => (
+                <div key={index} className="comment-item mb-3 p-3 border rounded">
+                  <div className="d-flex justify-content-between">
+                    <strong>{comment.name}</strong>
+                    <small className="text-muted">
+                      {new Date(comment.created_at).toLocaleString()}
+                    </small>
+                  </div>
+                  <p className="mt-2 mb-0">{comment.comment}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No comments available for this project.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowViewCommentsModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
