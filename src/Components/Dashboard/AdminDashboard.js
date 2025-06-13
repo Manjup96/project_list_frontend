@@ -130,14 +130,23 @@ const AdminDashboard = () => {
 
 
   const [comments, setComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+  const [hasUnseenComments, setHasUnseenComments] = useState(false);
+
   const fetchComments = async (projectId) => {
     try {
       const response = await axios.post(`${baseUrl}/get_comments.php`, {
-        project_id: projectId
+        project_id: projectId,
       });
 
       if (response.data.status === "success") {
-        setComments(response.data.data);
+        const allComments = response.data.data;
+
+        // Check for unseen comments
+        const unseen = allComments.some(comment => !comment.seen_by_admin);
+
+        setComments(allComments);
+        setHasUnseenComments(unseen);
       } else {
         alert("Failed to fetch comments.");
       }
@@ -146,6 +155,27 @@ const AdminDashboard = () => {
       alert("Error fetching comments.");
     }
   };
+
+  useEffect(() => {
+    const markCommentsAsSeen = async () => {
+      if (showComments && hasUnseenComments && selectedProject) {
+        try {
+          await axios.post(`${baseUrl}/mark_comments_seen.php`, {
+            project_id: selectedProject.project_id,
+          });
+          setHasUnseenComments(false);
+        } catch (error) {
+          console.error("Failed to mark comments as seen:", error);
+        }
+      }
+    };
+
+    markCommentsAsSeen();
+  }, [showComments, hasUnseenComments, selectedProject]);
+
+
+
+
 
   const closeModal = () => {
     setSelectedProject(null);
@@ -421,6 +451,89 @@ const AdminDashboard = () => {
                         {formatDateToIndian(selectedProject.client_end_date)}
                       </p>
                     </div>
+                    <div className="col-md-2">
+                      <div
+                        onClick={() => setShowComments(!showComments)}
+                        style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
+                      >
+                        <strong style={{ color: "black" }}>Comments</strong>
+
+                        {/* Badge */}
+                        {hasUnseenComments && !showComments && (
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: "-8px",
+                              right: "-11px",
+                              backgroundColor: "red",
+                              color: "white",
+                              borderRadius: "50%",
+                              padding: "2px 6px",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {comments.filter((c) => !c.seen_by_admin).length}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Show/Hide Text */}
+                      <div
+                        style={{
+                          color: "#0d6efd",
+                          fontSize: "0.85rem",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {showComments ? "Hide" : "Show"}
+                      </div>
+                    </div>
+                    <div>
+                      {showComments && (
+                        <div className="mt-2">
+                          <h5>Project Comments</h5>
+                          {comments.length === 0 ? (
+                            <p>No comments available.</p>
+                          ) : (
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th>S No</th>
+                                  <th>Comment</th>
+                                  <th>Commented By</th>
+                                  <th>Date</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {comments.map((comment, index) => (
+                                  <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{comment.comment}</td>
+                                    <td>{comment.name || "N/A"}</td>
+                                    <td>
+                                      {comment.created_at
+                                        ? new Date(comment.created_at).toLocaleString("en-IN", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                          year: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          hour12: true,
+                                          timeZone: "Asia/Kolkata",
+                                        })
+                                        : "N/A"}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      )}
+
+                    </div>
+
 
                     <div className="col-md-12 mt-3">
                       <Line data={lineChartData} options={lineChartOptions} />
@@ -450,45 +563,7 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
-                  <div className="mt-4">
-                    <h5>Project Comments</h5>
-                    {comments.length === 0 ? (
-                      <p>No comments available.</p>
-                    ) : (
-                      <table className="table table-bordered">
-                        <thead>
-                          <tr>
-                            <th>S No</th>
-                            <th>Comment</th>
-                            <th>Commented By</th>
-                            <th>Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {comments.map((comment, index) => (
-                            <tr key={index}>
-                              <td>{index + 1}</td>
-                              <td>{comment.comment}</td>
-                              <td>{comment.name || "N/A"}</td>
-                              <td>
-                                {comment.created_at
-                                  ? new Date(comment.created_at).toLocaleString("en-IN", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                    timeZone: "Asia/Kolkata",
-                                  })
-                                  : "N/A"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
+
 
                 </div>
 
