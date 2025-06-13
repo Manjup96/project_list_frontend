@@ -85,7 +85,7 @@ const AdminDashboard = () => {
   function getWeekFromStart(date, startDate) {
     const diffInMs = date.getTime() - startDate.getTime();
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-    return Math.floor(diffInDays / 7);
+    return Math.floor(diffInDays / 7) + 1;
   }
 
   function generateWeekLabels(start, end) {
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
     endDate.setHours(0, 0, 0, 0);
 
     let current = new Date(startDate);
-    let weekCount = 0; // Start from Week 0
+    let weekCount = 1;
 
     while (current <= endDate) {
       labels.push(`Week ${weekCount}`);
@@ -171,34 +171,16 @@ const AdminDashboard = () => {
     return numA - numB;
   });
 
-  // Add the "Planned Timeline" line (0% to 100% over the course of the project)
-  const totalWeeks = weekLabels.length;
-  const plannedTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
-    return (index / (totalWeeks - 1)) * 100; // Distribute 0% to 100% equally across weeks
-  });
-
-  const statusTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
-    return statusByWeek[`Week ${index}`] || 0; // Ensure the status timeline starts from 0 and increments
-  });
-
   const lineChartData = {
     labels: weekLabels,
     datasets: [
       {
         label: "Status Percentage",
-        data: statusTimeline, // Status Percentage data
+        data: weekLabels.map((week) => statusByWeek[week] || 0),
         fill: false,
         borderColor: "rgba(75, 192, 192, 1)",
         tension: 0.1,
         pointBackgroundColor: "rgba(75, 192, 192, 1)",
-      },
-      {
-        label: "Planned Timeline",
-        data: plannedTimeline, // Planned Timeline data
-        fill: false,
-        borderColor: "rgba(255, 99, 132, 1)", // Red color for the planned timeline
-        tension: 0.1,
-        pointBackgroundColor: "rgba(255, 99, 132, 1)", // Red points
       },
     ],
   };
@@ -220,19 +202,6 @@ const AdminDashboard = () => {
       title: { display: true, text: "Status Progress Over Weeks" },
     },
   };
-
-  // Calculate differences between status and planned timeline for each week
-  const statusDifference = weekLabels.map((week, index) => {
-    const statusPercent = statusTimeline[index];
-    const plannedPercent = plannedTimeline[index];
-    const difference = statusPercent - plannedPercent;
-    return {
-      week,
-      statusPercent,
-      plannedPercent,
-      difference,
-    };
-  });
 
   const barChartData = {
     labels: projects.map(p => p.project_name),
@@ -397,30 +366,6 @@ const AdminDashboard = () => {
                     <div className="col-md-12 mt-3">
                       <Line data={lineChartData} options={lineChartOptions} />
                     </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <h5>Difference Between Status and Planned Timeline</h5>
-                    <table className="table table-bordered">
-                      <thead>
-                        <tr>
-                          <th>Week</th>
-                          <th>Status (%)</th>
-                          <th>Planned (%)</th>
-                          <th>Difference (%)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {statusDifference.map((item, index) => (
-                          <tr key={index}>
-                            <td>{item.week}</td>
-                            <td>{item.statusPercent}%</td>
-                            <td>{item.plannedPercent}%</td>
-                            <td>{item.difference}%</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
 
