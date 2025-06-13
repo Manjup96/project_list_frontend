@@ -1,0 +1,113 @@
+/* Centering the login container */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4; /* Optional background color */
+  margin: -24px;
+}
+
+/* Card container for the login form */
+.login-card {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Logo styling */
+.login-logo {
+  margin-bottom: 1rem;
+}
+
+.logo {
+  width: 100px; /* Adjust logo size */
+  height: auto;
+}
+
+/* Heading */
+.login-heading {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Input styles */
+.input-field {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.8rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Button styles */
+.submit-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the submit button */
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Style for the Show/Hide password button */
+.password-container {
+  position: relative;
+}
+
+.eye-icon {
+  background-color: transparent;
+  color: #007bff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: color 0.3s ease;
+}
+
+/* Hover effect for the eye icon */
+.eye-icon:hover {
+  color: #0056b3;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    max-width: 300px;
+  }
+
+  .login-heading {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    width: 90%;
+    max-width: 250px;
+    padding: 1.5rem;
+  }
+
+  .login-heading {
+    font-size: 1.2rem;
+  }
+}

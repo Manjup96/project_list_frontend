@@ -1,0 +1,109 @@
+/* ProjectDetails.css */
+
+/* Container styles */
+.project-details-container {
+    margin-top: 20px;
+    padding: 20px;
+  }
+  
+  /* Header section */
+  .project-details-header {
+    margin-bottom: 20px;
+  }
+  
+  .project-details-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .project-search {
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* Search bar */
+  .search-input {
+  
+        width: 100%;
+    max-width: 500px;
+    margin-left: 100px;
+  }
+  
+  .search-bar {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-left: 65%;
+  }
+  
+  /* Table section */
+  .project-details-table {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    margin-left: 15%;
+  }
+  
+  .project-table {
+    width: 100%;
+    max-width: 1200px;  /* Optional: Set a max width for better control */
+    border-collapse: collapse;
+  }
+  
+  .project-table th,
+  .project-table td {
+    padding: 10px;
+    text-align: center;
+    font-size: 1rem;
+  }
+  
+  .project-table th {
+    background-color: #343a40;
+    color: white;
+  }
+  
+  .project-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .project-table tr:hover {
+    background-color: #e9ecef;
+  }
+  
+  .project-table td {
+    vertical-align: middle;
+  }
+  
+  /* No data message */
+  .project-table .text-center {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #888;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .project-details-title {
+      font-size: 1.5rem;
+    }
+  
+    .search-bar {
+      font-size: 0.9rem;
+    }
+  
+    .project-table th,
+    .project-table td {
+      font-size: 0.9rem;
+      padding: 8px;
+    }
+  
+    .project-details-table {
+      margin-top: 15px;
+    }
+  }
+  
+  .custom-width-141 {
+  width: 141%;
+}

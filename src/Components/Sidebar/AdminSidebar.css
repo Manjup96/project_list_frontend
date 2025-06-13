@@ -1,0 +1,101 @@
+.Title {
+    margin-left: 30px;
+  }
+  
+  .Title h4 {
+    margin-left: 5px;
+    margin-top: 2px;
+  }
+  
+  .AdminSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: rgb(208, 209, 215);
+    color: #464343;
+    transition: width 0.3s ease;
+    overflow-y: auto;
+    padding-top: 20px;
+    width: 220px;
+    z-index: 100;
+  }
+  
+  .AdminSidebar .AdminSidebar-toggle {
+    cursor: pointer;
+    text-align: center;
+    font-size: 21px;
+    transition: all 0.3s ease;
+    margin-left: 72%;
+    width: 37px;
+    margin-bottom: 6px;
+    background-color: #f0f0f0;
+    color: #0a98d8;
+    border-radius: 5px;
+  }
+  
+  .AdminSidebar .AdminSidebar-toggle.collapsed {
+    margin-left: 10%;
+  }
+  
+  .AdminSidebar.collapsed {
+    width: 50px;
+  }
+  
+  .AdminSidebar .top_section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+  }
+  
+  .AdminSidebar .logo {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .AdminSidebar .bars {
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .AdminSidebar .nav-item {
+    margin-bottom: 12px; /* ✅ Adds spacing between items */
+  }
+  
+  .AdminSidebar .nav-link {
+    display: flex;
+    align-items: center;
+    color: #464343;
+    text-decoration: none;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+    border-radius: 6px;
+  }
+  
+  .AdminSidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .AdminSidebar .nav-icon {
+    font-size: 18px;
+  }
+  
+  .AdminSidebar .link_text {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 16px;
+    color: #000;
+  }
+  
+  .AdminSidebar .nav-item.active .nav-link {
+    background-color: #f0f0f0;
+  }
+  
+  .AdminSidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  

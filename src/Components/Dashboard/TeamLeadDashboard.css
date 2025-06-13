@@ -1,0 +1,103 @@
+/* TeamLeadDashboard.css */
+
+/* Ensure the entire TeamLeadDashboard layout is centered */
+.TeamLeadDashboard-container {
+    display: flex;
+    justify-content: center;  /* Center horizontally */
+    align-items: center;      /* Center vertically */
+    height: 120vh;            /* Full height of the viewport */
+    /* background-color: #f4f4f4;  */
+    padding: 0;               /* Ensure no padding on the container */
+    margin: 0;                /* Ensure no margin on the container */
+  }
+  
+  /* Content section of the TeamLeadDashboard */
+  .TeamLeadDashboard-content {
+    padding: 0 30px;
+  }
+  
+  /* Title of the TeamLeadDashboard */
+  .TeamLeadDashboard-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+  }
+  
+  /* Cards layout container */
+  .TeamLeadDashboard-cards {
+    display: flex;
+    justify-content: center;  /* Center the cards in a row */
+    flex-wrap: wrap;          /* Allow cards to wrap to next line if necessary */
+    margin-top: 20px;         /* Adjust top margin */
+  }
+  
+  /* Each individual card */
+  .TeamLeadDashboard-card {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-footer {
+    background-color: #343a40;
+    color: white;
+  }
+  
+  .stretched-link {
+    text-decoration: none;
+  }
+  
+  .d-flex {
+    display: flex;
+  }
+  
+  .justify-content-between {
+    justify-content: space-between;
+  }
+  
+  .align-items-center {
+    align-items: center;
+  }
+  
+  .badge-lg {
+    font-size: 25px;
+  }
+  
+  .text-white {
+    color: white;
+  }
+  
+  /* Adjust spacing for cards */
+  .card {
+    width: 100%;
+    max-width: 300px; /* Limit the card's max width */
+    margin: 10px;      /* Add margin between cards */
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .card {
+      width: 100%; /* Cards take full width on smaller screens */
+    }
+  
+    .card-body {
+      padding: 15px;
+    }
+  
+    .TeamLeadDashboard-title {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .welcome-message {
+    text-align: center;  /* Centers text horizontally */
+    font-size: 1.5rem;   /* Optional: Adjust the font size */
+    font-weight: bold;   /* Optional: Make it bold */
+    margin-top: 20px;    /* Optional: Add some margin to the top */
+  }
+  
