@@ -452,18 +452,21 @@ const AdminDashboard = () => {
                       </p>
                     </div>
                     <div className="col-md-2">
-                      <div
+                      <p
                         onClick={() => setShowComments(!showComments)}
                         style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
                       >
                         <strong style={{ color: "black" }}>Comments</strong>
-
-                        {/* Badge */}
+                        <br />
+                        <span style={{ color: "#0d6efd" }}>
+                          {showComments ? "Hide" : "Show"}
+                        </span>
                         {hasUnseenComments && !showComments && (
                           <span
+                            className="badge bg-danger ms-2"
                             style={{
                               position: "absolute",
-                              top: "-8px",
+                              top: "-6px",
                               right: "-11px",
                               backgroundColor: "red",
                               color: "white",
@@ -476,19 +479,9 @@ const AdminDashboard = () => {
                             {comments.filter((c) => !c.seen_by_admin).length}
                           </span>
                         )}
-                      </div>
-
-                      {/* Show/Hide Text */}
-                      <div
-                        style={{
-                          color: "#0d6efd",
-                          fontSize: "0.85rem",
-                          marginTop: "4px",
-                        }}
-                      >
-                        {showComments ? "Hide" : "Show"}
-                      </div>
+                      </p>
                     </div>
+
                     <div>
                       {showComments && (
                         <div className="mt-2">
