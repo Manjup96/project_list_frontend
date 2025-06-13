@@ -15,6 +15,8 @@ import {
 import { baseUrl } from "../APIServices/APIServices";
 import "./AdminDashboard.css";
 import axios from "axios";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 ChartJS.register(
   CategoryScale,
@@ -26,6 +28,7 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
 
 const AdminDashboard = () => {
   const [projectCount, setProjectCount] = useState(0);
@@ -107,11 +110,18 @@ const AdminDashboard = () => {
     return labels;
   }
 
+  const [user, setUser] = useState(null);
+
+  // Fetch all projects from the backend when the component is mounted
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+  }, []);
+
   const openModal = async (project) => {
     setSelectedProject(project);
     setShowModal(true);
 
-    // Fetching status history
     try {
       const response = await fetch(
         `${baseUrl}/getProjectStatusHistory.php?projectId=${project.project_id}`
@@ -132,6 +142,8 @@ const AdminDashboard = () => {
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [hasUnseenComments, setHasUnseenComments] = useState(false);
+  const [comment, setComment] = useState("");
+  const [showCommentModal, setShowCommentModal] = useState(false);
 
   const fetchComments = async (projectId) => {
     try {
@@ -173,6 +185,34 @@ const AdminDashboard = () => {
     markCommentsAsSeen();
   }, [showComments, hasUnseenComments, selectedProject]);
 
+
+  const handleAddComment = async () => {
+    if (!comment.trim()) {
+      alert("Please enter a comment");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${baseUrl}/add_comment.php`, {
+        project_id: selectedProject.project_id,  // Use this directly
+        comment: comment,
+        user_id: user?.id,
+        name: user?.name,
+      });
+
+      if (response.data.status === "success") {
+        alert("Comment added successfully");
+        setComment("");
+        setShowCommentModal(false);
+        fetchComments(selectedProject.project_id); // Refresh using correct ID
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Add comment error:", error);
+      alert("Error adding comment");
+    }
+  };
 
 
 
@@ -485,7 +525,14 @@ const AdminDashboard = () => {
                     <div>
                       {showComments && (
                         <div className="mt-2">
-                          <h5>Project Comments</h5>
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="mb-0">Project Comments</h5>
+                            <Button variant="info" onClick={() => setShowCommentModal(true)}>
+                              Add Comment
+                            </Button>
+
+                          </div>
+
                           {comments.length === 0 ? (
                             <p>No comments available.</p>
                           ) : (
@@ -569,6 +616,32 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        <Modal show={showCommentModal} onHide={() => setShowCommentModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add Comment</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="form-group">
+              <label>Comment:</label>
+              <textarea
+                className="form-control"
+                rows="4"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                required
+              />
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowCommentModal(false)}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleAddComment}>
+              Save Comment
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );
