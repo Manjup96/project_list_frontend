@@ -148,7 +148,7 @@ const AdminDashboard = () => {
   const [comment, setComment] = useState("");
   const [showCommentModal, setShowCommentModal] = useState(false);
 
- const handleSubmitResponse = () => {
+  const handleSubmitResponse = () => {
     if (!responseText) {
       alert("Please enter a response.");
       return;
@@ -162,11 +162,9 @@ const AdminDashboard = () => {
 
     // Prepare the response data to be sent to the backend
     const responseData = {
-      comment_id: selectedComment.id,  // Ensure it's correctly passed from selectedComment
-      response_text: responseText,     // Get the response text from the state
-      responded_by: "admin",           // Replace this with the logged-in user (e.g., dynamic username)
-      project_id: selectedProject.project_id,  // Add project_id from the selected project
-      user_id: user?.id,               // Add the user_id (logged-in user)
+      comment_id: selectedComment.id, // Ensure it's correctly passed from selectedComment
+      response_text: responseText, // Get the response text from the state
+      responded_by: "admin", // Replace this with the logged-in user (e.g., dynamic username)
     };
 
     console.log("Sending response data: ", responseData); // Log the data for debugging

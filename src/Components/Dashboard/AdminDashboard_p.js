@@ -15,8 +15,8 @@ import {
 import { baseUrl } from "../APIServices/APIServices";
 import "./AdminDashboard.css";
 import axios from "axios";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 ChartJS.register(
   CategoryScale,
@@ -29,6 +29,7 @@ ChartJS.register(
   Legend
 );
 
+
 const AdminDashboard = () => {
   const [projectCount, setProjectCount] = useState(0);
   const [exceedCount, setExceedCount] = useState(0);
@@ -40,10 +41,8 @@ const AdminDashboard = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [statusHistory, setStatusHistory] = useState([]);
 
-  const [showResponseModal, setShowResponseModal] = useState(false);
+   const [showResponseModal, setShowResponseModal] = useState(false);
   const [selectedComment, setSelectedComment] = useState(null);
-
-  const [responseText, setResponseText] = useState("");
 
   const colors = [
     "bg-warning",
@@ -142,68 +141,12 @@ const AdminDashboard = () => {
     fetchComments(project.project_id);
   };
 
+
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [hasUnseenComments, setHasUnseenComments] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentModal, setShowCommentModal] = useState(false);
-
- const handleSubmitResponse = () => {
-    if (!responseText) {
-      alert("Please enter a response.");
-      return;
-    }
-
-    // Ensure selectedComment is not null or undefined
-    if (!selectedComment || !selectedComment.id) {
-      console.error("Comment ID is missing.");
-      return;
-    }
-
-    // Prepare the response data to be sent to the backend
-    const responseData = {
-      comment_id: selectedComment.id,  // Ensure it's correctly passed from selectedComment
-      response_text: responseText,     // Get the response text from the state
-      responded_by: "admin",           // Replace this with the logged-in user (e.g., dynamic username)
-      project_id: selectedProject.project_id,  // Add project_id from the selected project
-      user_id: user?.id,               // Add the user_id (logged-in user)
-    };
-
-    console.log("Sending response data: ", responseData); // Log the data for debugging
-
-    // Send the response data to the PHP backend via a POST request
-    fetch(`${baseUrl}/add_response.php`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(responseData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
-          console.log("Response saved successfully:", data.message);
-
-          // Show success alert
-          alert("Response submitted successfully!");
-
-          // Close the modal after successful submission
-          setShowResponseModal(false); // Close the modal
-          setSelectedComment(null); // Reset selected comment
-        } else {
-          console.error("Error saving response:", data.message);
-
-          // Show error alert
-          alert("Error submitting response: " + data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-
-        // Show error alert in case of a network or unexpected error
-        alert("Error: Unable to submit response.");
-      });
-  };
 
   const fetchComments = async (projectId) => {
     try {
@@ -215,7 +158,7 @@ const AdminDashboard = () => {
         const allComments = response.data.data;
 
         // Check for unseen comments
-        const unseen = allComments.some((comment) => !comment.seen_by_admin);
+        const unseen = allComments.some(comment => !comment.seen_by_admin);
 
         setComments(allComments);
         setHasUnseenComments(unseen);
@@ -245,14 +188,15 @@ const AdminDashboard = () => {
     markCommentsAsSeen();
   }, [showComments, hasUnseenComments, selectedProject]);
 
-  //     const handleShowResponseModal = (comment) => {
-  //     setSelectedComment(comment);
-  //     setShowResponseModal(true);
-  //   };
+
+    const handleShowResponseModal = (comment) => {
+    setSelectedComment(comment);  // Store the selected comment
+    setShowResponseModal(true);   // Show the modal
+  };
 
   const handleCloseResponseModal = () => {
-    setShowResponseModal(false); // Close the modal
-    setSelectedComment(null); // Reset selected comment
+    setShowResponseModal(false);  // Close the modal
+    setSelectedComment(null);     // Reset selected comment
   };
 
   const handleAddComment = async () => {
@@ -263,7 +207,7 @@ const AdminDashboard = () => {
 
     try {
       const response = await axios.post(`${baseUrl}/add_comment.php`, {
-        project_id: selectedProject.project_id, // Use this directly
+        project_id: selectedProject.project_id,  // Use this directly
         comment: comment,
         user_id: user?.id,
         name: user?.name,
@@ -283,6 +227,9 @@ const AdminDashboard = () => {
     }
   };
 
+
+
+
   const closeModal = () => {
     setSelectedProject(null);
     setShowModal(false);
@@ -291,13 +238,8 @@ const AdminDashboard = () => {
   };
 
   const weekLabels =
-    selectedProject &&
-    selectedProject.start_date &&
-    selectedProject.client_end_date
-      ? generateWeekLabels(
-          selectedProject.start_date,
-          selectedProject.client_end_date
-        )
+    selectedProject && selectedProject.start_date && selectedProject.client_end_date
+      ? generateWeekLabels(selectedProject.start_date, selectedProject.client_end_date)
       : [];
 
   const statusByWeek = {};
@@ -401,13 +343,13 @@ const AdminDashboard = () => {
   });
 
   const barChartData = {
-    labels: projects.map((p) => p.project_name),
+    labels: projects.map(p => p.project_name),
     datasets: [
       {
-        label: "Project Status (%)",
-        data: projects.map((p) => p.status_percentage),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-        borderColor: "rgba(75, 192, 192, 1)",
+        label: 'Project Status (%)',
+        data: projects.map(p => p.status_percentage),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
       },
     ],
@@ -416,39 +358,29 @@ const AdminDashboard = () => {
   const barChartOptions = {
     responsive: true,
     plugins: {
-      legend: { display: true, position: "top" },
-      title: { display: true, text: "Project Progress" },
+      legend: { display: true, position: 'top' },
+      title: { display: true, text: 'Project Progress' },
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 100,
-        title: { display: true, text: "Status (%)" },
+        title: { display: true, text: 'Status (%)' },
       },
       x: {
-        title: { display: true, text: "Projects" },
+        title: { display: true, text: 'Projects' },
       },
     },
   };
 
   const cardData = [
     { title: "Projects", count: projectCount, bgClass: "bg-secondary" },
-    {
-      title: "Exceed Project Development",
-      count: exceedCount,
-      bgClass: "bg-primary",
-    },
-    {
-      title: "Projects Completed",
-      count: completedCount,
-      bgClass: "bg-success",
-    },
-    {
-      title: "Projects Inprogress",
-      count: inprogressCount,
-      bgClass: "bg-secondary",
-    },
+    { title: "Exceed Project Development", count: exceedCount, bgClass: "bg-primary" },
+    { title: "Projects Completed", count: completedCount, bgClass: "bg-success" },
+    { title: "Projects Inprogress", count: inprogressCount, bgClass: "bg-secondary" },
   ];
+
+
 
   return (
     <div className="AdminDashboard-container">
@@ -465,17 +397,11 @@ const AdminDashboard = () => {
               key={index}
               className="AdminDashboard-card col-xl-3 col-lg-3 col-md-6 col-sm-12 mb-4"
             >
-              <div
-                className={`card ${card.bgClass} text-white`}
-                style={{ borderRadius: "0px" }}
-              >
+              <div className={`card ${card.bgClass} text-white`} style={{ borderRadius: "0px" }}>
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-center">
                     <span>{card.title}</span>
-                    <span
-                      className="badge badge-secondary badge-lg"
-                      style={{ fontSize: "25px" }}
-                    >
+                    <span className="badge badge-secondary badge-lg" style={{ fontSize: "25px" }}>
                       {card.count}
                     </span>
                   </div>
@@ -502,10 +428,7 @@ const AdminDashboard = () => {
                 style={{ cursor: "pointer" }}
                 onClick={() => openModal(project)}
               >
-                <div
-                  className={`card ${colorClass} text-white`}
-                  style={{ borderRadius: "0px" }}
-                >
+                <div className={`card ${colorClass} text-white`} style={{ borderRadius: "0px" }}>
                   <div className="card-body">
                     <h5 className="card-title">{project.project_name}</h5>
                     <h5 className="card-title">{project.project_id}</h5>
@@ -541,11 +464,7 @@ const AdminDashboard = () => {
                   <h5 className="modal-title">
                     {selectedProject.project_name} - Status vs Week Graph
                   </h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={closeModal}
-                  ></button>
+                  <button type="button" className="btn-close" onClick={closeModal}></button>
                 </div>
 
                 <div className="modal-body">
@@ -588,11 +507,7 @@ const AdminDashboard = () => {
                     <div className="col-md-2">
                       <p
                         onClick={() => setShowComments(!showComments)}
-                        style={{
-                          position: "relative",
-                          display: "inline-block",
-                          cursor: "pointer",
-                        }}
+                        style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
                       >
                         <strong style={{ color: "black" }}>Comments</strong>
                         <br />
@@ -621,136 +536,117 @@ const AdminDashboard = () => {
                     </div>
 
                     <div>
-                      {showComments && (
-                        <div className="mt-2">
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h5 className="mb-0">Project Comments</h5>
-                          </div>
+{showComments && (
+  <div className="mt-2">
+    <div className="d-flex justify-content-between align-items-center mb-3">
+      <h5 className="mb-0">Project Comments</h5>
+    </div>
 
-                          {comments.length === 0 ? (
-                            <p>No comments available.</p>
-                          ) : (
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr>
-                                  <th>S No</th>
-                                  {/* <th>Comment ID</th>{" "} */}
-                                  {/* Added the ID column */}
-                                  <th>Comment</th>
-                                  <th>Commented By</th>
-                                  <th>Date</th>
-                                  <th>Response</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {comments.map((comment, index) => (
-                                  <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    {/* <td>{comment.id}</td>{" "} */}
-                                    {/* Display the comment id here */}
-                                    <td>{comment.comment}</td>
-                                    <td>{comment.name || "N/A"}</td>
-                                    <td>
-                                      {comment.created_at
-                                        ? new Date(
-                                            comment.created_at
-                                          ).toLocaleString("en-IN", {
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: true,
-                                            timeZone: "Asia/Kolkata",
-                                          })
-                                        : "N/A"}
-                                    </td>
-                                    <td>
-                                      <Button
-                                        variant="info"
-                                        onClick={() => {
-                                          setShowResponseModal(true);
-                                          setSelectedComment(comment); // Store the selected comment in state
-                                        }}
-                                      >
-                                        Respond
-                                      </Button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          )}
+    {comments.length === 0 ? (
+      <p>No comments available.</p>
+    ) : (
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            <th>S No</th>
+            <th>Comment ID</th> {/* Added the ID column */}
+            <th>Comment</th>
+            <th>Commented By</th>
+            <th>Date</th>
+            <th>Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          {comments.map((comment, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{comment.id}</td> {/* Display the comment id here */}
+              <td>{comment.comment}</td>
+              <td>{comment.name || "N/A"}</td>
+              <td>
+                {comment.created_at
+                  ? new Date(comment.created_at).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                      timeZone: "Asia/Kolkata",
+                    })
+                  : "N/A"}
+              </td>
+              <td>
+                <Button
+                  variant="info"
+                  onClick={() => {
+                    setShowResponseModal(true);
+                    setSelectedComment(comment); // Store the selected comment in state
+                  }}
+                >
+                  Respond
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
 
-                          {/* Response Modal */}
-                          <Modal
-                            show={showResponseModal}
-                            onHide={handleCloseResponseModal}
-                          >
-                            <Modal.Header closeButton>
-                              <Modal.Title>Respond to Comment</Modal.Title>
-                            </Modal.Header>
-                            <Modal.Body>
-                              <div>
-                                <h6>
-                                  Comment:{" "}
-                                  {selectedComment
-                                    ? selectedComment.comment
-                                    : "N/A"}
-                                </h6>
+    {/* Response Modal */}
+    <Modal show={showResponseModal} onHide={handleCloseResponseModal}>
+      <Modal.Header closeButton>
+        <Modal.Title>Respond to Comment</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div>
+          <h6>Comment: {selectedComment ? selectedComment.comment : "N/A"}</h6>
 
-                                {/* ID Input Field */}
-                                <div className="mb-3">
-                                  <label
-                                    htmlFor="responseId"
-                                    className="form-label"
-                                  >
-                                    Response ID
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="responseId"
-                                    placeholder="Enter your response ID"
-                                    value={
-                                      selectedComment ? selectedComment.id : ""
-                                    }
-                                    readOnly
-                                  />
-                                </div>
+          {/* ID Input Field */}
+          <div className="mb-3">
+            <label htmlFor="responseId" className="form-label">
+              Response ID
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="responseId"
+              placeholder="Enter your response ID"
+              value={selectedComment ? selectedComment.id : ""}
+              readOnly
+            />
+          </div>
 
-                                {/* Textarea for Response */}
-                                <div className="mb-3">
-                                  <textarea
-                                    className="form-control"
-                                    placeholder="Write your response..."
-                                    rows="4"
-                                    value={responseText} // Bind the textarea to state
-                                    onChange={(e) =>
-                                      setResponseText(e.target.value)
-                                    } // Update the state when the user types
-                                  />
-                                </div>
-                              </div>
-                            </Modal.Body>
-                            <Modal.Footer>
-                              <Button
-                                variant="secondary"
-                                onClick={handleCloseResponseModal}
-                              >
-                                Close
-                              </Button>
-                              <Button
-                                variant="primary"
-                                onClick={handleSubmitResponse}
-                              >
-                                Submit Response
-                              </Button>
-                            </Modal.Footer>
-                          </Modal>
-                        </div>
-                      )}
+          {/* Textarea for Response */}
+          <textarea
+            className="form-control"
+            placeholder="Write your response..."
+            rows="4"
+          ></textarea>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleCloseResponseModal}>
+          Close
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => {
+            // Handle the response submission here
+            handleCloseResponseModal(); // Close the modal after response
+          }}
+        >
+          Submit Response
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  </div>
+)}
+
+
+
                     </div>
+
 
                     <div className="col-md-12 mt-3">
                       <Line data={lineChartData} options={lineChartOptions} />
@@ -780,14 +676,12 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+
+
                 </div>
 
                 <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={closeModal}
-                  >
+                  <button type="button" className="btn btn-secondary" onClick={closeModal}>
                     Close
                   </button>
                 </div>
@@ -796,10 +690,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        <Modal
-          show={showCommentModal}
-          onHide={() => setShowCommentModal(false)}
-        >
+        <Modal show={showCommentModal} onHide={() => setShowCommentModal(false)}>
           <Modal.Header closeButton>
             <Modal.Title>Add Comment</Modal.Title>
           </Modal.Header>
@@ -816,10 +707,7 @@ const AdminDashboard = () => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setShowCommentModal(false)}
-            >
+            <Button variant="secondary" onClick={() => setShowCommentModal(false)}>
               Close
             </Button>
             <Button variant="primary" onClick={handleAddComment}>

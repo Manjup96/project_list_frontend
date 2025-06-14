@@ -60,6 +60,18 @@ const AdminSidebar = ({ user }) => {
                 {!collapsed && <span className="link_text">Dashboard</span>}
               </Link>
             </li>
+
+         <li
+              className={`nav-item ${
+                location.pathname === "/leads" ? "active" : ""
+              }`}
+            >
+              <Link className="nav-link" to="/leads">
+                <FaUtensils className="nav-icon" />
+                {!collapsed && <span className="link_text">Leads</span>}
+              </Link>
+            </li>
+
             <li
               className={`nav-item ${
                 location.pathname === "/add-project" ? "active" : ""

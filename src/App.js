@@ -11,6 +11,7 @@ import ProjectDetails from './Pages/ProjectDetails/ProjectDetails';
 import Logout from './Components/Logout/Logout';
 import AdminSidebar from './Components/Sidebar/AdminSidebar';
 import TeamLeadSidebar from './Components/Sidebar/TeamLeadSidebar';
+import Leads from './Pages/Leads/LeadDetails'
 
 function getUserFromLocalStorage() {
   try {
@@ -59,6 +60,7 @@ function AppContent() {
           <LayoutWrapper>
             <Routes>
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                 <Route path="/leads" element={<Leads />} />
               <Route path="/teamlead-dashboard" element={<TeamLeadDashboard />} />
               <Route path="/add-project" element={<AddProject />} />
               <Route path="/project-details" element={<ProjectDetails />} />

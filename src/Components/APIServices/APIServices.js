@@ -1,9 +1,12 @@
- const baseUrl= "http://localhost/project_list_backend"; 
-//  const baseUrl= "http://69.62.76.211:85"; 
+// Base URLs
+// const baseUrl = "http://localhost/project_list_backend";
+  const baseUrl= "http://localhost/project-list/backend"; 
+// const baseUrl = "http://69.62.76.211:85";
 
+// Optional webhook and admin email
 // const webhookUrl = "http://localhost:4000";
-// const adminMail = "admin"
+// const adminMail = "admin";
 
-// Export them as named exports
-// export { baseURL, webhookUrl,adminMail };
-export { baseUrl};
+// Export values
+export { baseUrl };
+// export { baseUrl, webhookUrl, adminMail }; // Uncomment this if you want to export all

@@ -144,7 +144,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="or-separator">
+        {/* <div className="or-separator">
           <span>OR</span>
         </div>
 
@@ -152,10 +152,10 @@ const Login = () => {
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleFailure}
-            useOneTap // This might help with the popup issues
-            ux_mode="popup" // Explicitly set to popup mode
+            useOneTap 
+            ux_mode="popup" 
           />
-        </div>
+        </div> */}
       </div>
       <ToastContainer />
     </div>

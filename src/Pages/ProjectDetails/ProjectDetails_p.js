@@ -20,9 +20,6 @@ const ProjectDetails = () => {
   const [statusPercentage, setStatusPercentage] = useState(""); // State for the percentage input
   const [user, setUser] = useState(null);
 
-    const [showResponseModal, setShowResponseModal] = useState(false); // Modal visibility state
-
-
   // Fetch all projects from the backend when the component is mounted
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -188,8 +185,6 @@ const ProjectDetails = () => {
   const [comments, setComments] = useState([]);
   const [selectedProjectForComment, setSelectedProjectForComment] = useState(null);
   const [showViewCommentsModal, setShowViewCommentsModal] = useState(false);
-  const [responseData, setResponseData] = useState([]);
-
 
   const fetchComments = async (projectId) => {
     try {
@@ -245,48 +240,6 @@ const ProjectDetails = () => {
     setShowViewCommentsModal(true);
   };
 
-const handleResponseClick = async (comment_id, project_id) => {
-  if (!comment_id) {
-    alert("Comment ID is missing.");
-    return;
-  }
-
-  if (!project_id) {
-    alert("Project ID is missing.");
-    return;
-  }
-
-  // Log the projectId to the console to see its value
-  console.log("Project ID: ", project_id);
-
-  setShowResponseModal(true); // Show the response modal
-
-  try {
-    // Make the POST request with comment_id and project_id
-    const response = await axios.post(`${baseUrl}/get_responses.php`, {
-      comment_id: comment_id,  // Ensure comment_id is passed correctly
-      project_id: project_id,  // Pass the project_id as well
-    });
-
-    if (response.data.status === "success") {
-      setResponseData(response.data.data); // Set the response data in state
-    } else {
-      alert("Failed to fetch response data.");
-    }
-  } catch (error) {
-    console.error("Error fetching response data:", error);
-    alert("Error fetching response data.");
-  }
-};
-
-
-
-
-  // Close the response modal
-  const closeResponseModal = () => {
-    setShowResponseModal(false);
-  };
-
   return (
     <div className="project-details-container">
       <div className="project-details-header row justify-content-center">
@@ -331,7 +284,6 @@ const handleResponseClick = async (comment_id, project_id) => {
                   <th>Change Status</th>
                 )}
                 <th>Comments</th>
-                <th>Response</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -370,20 +322,13 @@ const handleResponseClick = async (comment_id, project_id) => {
                     >
                       Add
                     </button>
-    
+                    {/* <button
+                      className="btn btn-info btn-sm"
+                      onClick={() => handleViewComments(project)}
+                    >
+                      <FontAwesomeIcon icon={faComments} /> View
+                    </button> */}
                   </td>
-               
-               <td>
-  <button
-    className="btn btn-info btn-sm me-2"
-    onClick={() => handleResponseClick(project.comment_id, project.project_id)}  
-  >
-    Response
-  </button>
-</td>
-
-
-
                   <td className="d-flex justify-content-start mt-3">
                     <button
                       className="btn btn-warning btn-sm me-2"
@@ -405,43 +350,6 @@ const handleResponseClick = async (comment_id, project_id) => {
           </table>
         </div>
       </div>
-
- <Modal show={showResponseModal} onHide={closeResponseModal}>
-  <Modal.Header closeButton>
-    <Modal.Title>Responses</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {responseData.length > 0 ? (
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>Response ID</th>
-            <th>Response Text</th>
-            <th>Responded By</th>
-            <th>Response Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {responseData.map((response) => (
-            <tr key={response.id}>
-              <td>{response.id}</td>
-              <td>{response.response_text}</td>
-              <td>{response.responded_by}</td>
-              <td>{new Date(response.response_date).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ) : (
-      <p>No responses available.</p>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={closeResponseModal}>Close</Button>
-  </Modal.Footer>
-</Modal>
-
-
 
       {/* Status Update Modal */}
       {showStatusModal && selectedProjectForStatus && (

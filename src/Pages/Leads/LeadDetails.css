@@ -1,0 +1,87 @@
+/* Base container for the component */
+.lead-details {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh; /* Makes sure the table is centered vertically */
+  flex-direction: column;
+  text-align: center;
+}
+
+/* Table styles */
+.lead-details__table {
+  width: 70%; /* Adjust the width as needed */
+  border-collapse: collapse;
+  margin-top: 20px;
+  margin-right: -50px;
+}
+
+.lead-details__table th, .lead-details__table td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.lead-details__table th {
+  background-color: #f4f4f4;
+}
+
+/* Title of the component */
+.lead-details__title {
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #333;
+}
+
+/* Button to add a lead */
+.lead-details__add-lead-btn {
+  position: absolute;
+    top: 24px;
+  right: 221px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.lead-details__add-lead-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Modal Overlay */
+.lead-details__modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.lead-details__modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  position: relative;
+}
+
+/* Close Button */
+.lead-details__close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
