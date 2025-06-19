@@ -96,23 +96,43 @@ const AdminDashboard = () => {
     return Math.floor(diffInDays / 7);
   }
 
+  // function generateWeekLabels(start, end) {
+  //   const labels = [];
+  //   const startDate = new Date(start);
+  //   startDate.setHours(0, 0, 0, 0);
+  //   const endDate = new Date(end);
+  //   endDate.setHours(0, 0, 0, 0);
+
+  //   let current = new Date(startDate);
+  //   let weekCount = 0; // Start from Week 0
+
+  //   while (current <= endDate) {
+  //     labels.push(`Week ${weekCount}`);
+  //     current.setDate(current.getDate() + 7);
+  //     weekCount++;
+  //   }
+  //   return labels;
+  // }
+
   function generateWeekLabels(start, end) {
-    const labels = [];
-    const startDate = new Date(start);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(end);
-    endDate.setHours(0, 0, 0, 0);
+  const labels = [];
+  const startDate = new Date(start);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date(end);
+  endDate.setHours(0, 0, 0, 0);
 
-    let current = new Date(startDate);
-    let weekCount = 0; // Start from Week 0
+  let current = new Date(startDate);
+  let weekCount = 1; // Start from Week 1
 
-    while (current <= endDate) {
-      labels.push(`Week ${weekCount}`);
-      current.setDate(current.getDate() + 7);
-      weekCount++;
-    }
-    return labels;
+  while (current <= endDate) {
+    labels.push(`Week ${weekCount}`);
+    current.setDate(current.getDate() + 7);
+    weekCount++;
   }
+
+  return labels;
+}
+
 
   const [user, setUser] = useState(null);
 
@@ -148,7 +168,7 @@ const AdminDashboard = () => {
   const [comment, setComment] = useState("");
   const [showCommentModal, setShowCommentModal] = useState(false);
 
- const handleSubmitResponse = () => {
+  const handleSubmitResponse = () => {
     if (!responseText) {
       alert("Please enter a response.");
       return;
@@ -162,11 +182,9 @@ const AdminDashboard = () => {
 
     // Prepare the response data to be sent to the backend
     const responseData = {
-      comment_id: selectedComment.id,  // Ensure it's correctly passed from selectedComment
-      response_text: responseText,     // Get the response text from the state
-      responded_by: "admin",           // Replace this with the logged-in user (e.g., dynamic username)
-      project_id: selectedProject.project_id,  // Add project_id from the selected project
-      user_id: user?.id,               // Add the user_id (logged-in user)
+      comment_id: selectedComment.id, // Ensure it's correctly passed from selectedComment
+      response_text: responseText, // Get the response text from the state
+      responded_by: "admin", // Replace this with the logged-in user (e.g., dynamic username)
     };
 
     console.log("Sending response data: ", responseData); // Log the data for debugging
@@ -337,6 +355,9 @@ const AdminDashboard = () => {
     return numA - numB;
   });
 
+
+ 
+
   // Add the "Planned Timeline" line (0% to 100% over the course of the project)
   const totalWeeks = weekLabels.length;
   const plannedTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
@@ -344,30 +365,39 @@ const AdminDashboard = () => {
   });
 
   const statusTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
-    return statusByWeek[`Week ${index}`] || 0; // Ensure the status timeline starts from 0 and increments
+    return statusByWeek[`Week ${index}`] || 0; 
   });
 
-  const lineChartData = {
-    labels: weekLabels,
-    datasets: [
-      {
-        label: "Status Percentage",
-        data: statusTimeline, // Status Percentage data
-        fill: false,
-        borderColor: "rgba(75, 192, 192, 1)",
-        tension: 0.1,
-        pointBackgroundColor: "rgba(75, 192, 192, 1)",
-      },
-      {
-        label: "Planned Timeline",
-        data: plannedTimeline, // Planned Timeline data
-        fill: false,
-        borderColor: "rgba(255, 99, 132, 1)", // Red color for the planned timeline
-        tension: 0.1,
-        pointBackgroundColor: "rgba(255, 99, 132, 1)", // Red points
-      },
-    ],
-  };
+// const statusTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
+//   return statusByWeek[`Week ${index + 1}`] || null; // Use null if no data for the week
+// });
+
+
+
+
+const lineChartData = {
+  labels: weekLabels,
+  datasets: [
+    {
+      label: "Status Percentage",
+      data: statusTimeline, // Status Percentage data with null for missing weeks
+      fill: false,
+      borderColor: "rgba(75, 192, 192, 1)",
+      tension: 0.1,
+      pointBackgroundColor: "rgba(75, 192, 192, 1)",
+    },
+    {
+      label: "Planned Timeline",
+      data: plannedTimeline, // Planned Timeline data
+      fill: false,
+      borderColor: "rgba(255, 99, 132, 1)", // Red color for the planned timeline
+      tension: 0.1,
+      pointBackgroundColor: "rgba(255, 99, 132, 1)", // Red points
+    },
+  ],
+};
+
+
 
   const lineChartOptions = {
     responsive: true,
@@ -386,6 +416,9 @@ const AdminDashboard = () => {
       title: { display: true, text: "Status Progress Over Weeks" },
     },
   };
+
+
+
 
   // Calculate differences between status and planned timeline for each week
   const statusDifference = weekLabels.map((week, index) => {

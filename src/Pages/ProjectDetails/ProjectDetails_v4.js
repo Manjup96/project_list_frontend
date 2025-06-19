@@ -19,9 +19,6 @@ const ProjectDetails = () => {
   const [showStatusModal, setShowStatusModal] = useState(false); // Controls the visibility of the status update modal
   const [statusPercentage, setStatusPercentage] = useState(""); // State for the percentage input
   const [user, setUser] = useState(null);
-const [selectedCommentId, setSelectedCommentId] = useState(null);
-const [selectedProjectId, setSelectedProjectId] = useState(null);
-
 
     const [showResponseModal, setShowResponseModal] = useState(false); // Modal visibility state
 
@@ -33,13 +30,6 @@ const [selectedProjectId, setSelectedProjectId] = useState(null);
     setRole(storedUser?.role || "");
     fetchProjects(); // Initially fetch all projects
   }, []);
-
-     useEffect(() => {
-        if (selectedProjectId && selectedCommentId) {
-            fetchComments(selectedProjectId); // Fetch comments related to the project
-        }
-    }, [selectedProjectId, selectedCommentId]);
-
 
   // Fetch projects from the backend based on status filter
   const fetchProjects = async () => {
@@ -255,22 +245,28 @@ const [selectedProjectId, setSelectedProjectId] = useState(null);
     setShowViewCommentsModal(true);
   };
 
+const handleResponseClick = async (comment_id, project_id) => {
+  if (!comment_id) {
+    alert("Comment ID is missing.");
+    return;
+  }
 
-const handleResponseClick = async (project_id) => {
   if (!project_id) {
     alert("Project ID is missing.");
     return;
   }
 
-  setSelectedProjectId(project_id); // Set the project ID to state
-  setShowResponseModal(true); // Show the modal
+  // Log the projectId to the console to see its value
+  console.log("Project ID: ", project_id);
+
+  setShowResponseModal(true); // Show the response modal
 
   try {
+    // Make the POST request with comment_id and project_id
     const response = await axios.post(`${baseUrl}/get_responses.php`, {
-      project_id: project_id,  // Ensure project_id is being passed correctly
+      comment_id: comment_id,  // Ensure comment_id is passed correctly
+      project_id: project_id,  // Pass the project_id as well
     });
-
-    console.log("Response Data:", response.data);
 
     if (response.data.status === "success") {
       setResponseData(response.data.data); // Set the response data in state
@@ -282,10 +278,6 @@ const handleResponseClick = async (project_id) => {
     alert("Error fetching response data.");
   }
 };
-
-
-
-
 
 
 
@@ -340,92 +332,88 @@ const handleResponseClick = async (project_id) => {
                 )}
                 <th>Comments</th>
                 <th>Response</th>
-                {/* <th>View Progress</th> */}
+                <th>View Progress</th>
                 <th>Action</th>
               </tr>
             </thead>
 
-        <tbody>
-  {filteredProjects.map((project, index) => (
-    <tr key={project.id}>
-      <td>{index + 1}</td>
-      <td>{project.project_name}</td>
-      <td>{project.primary_team_lead}</td>
-      <td>{project.secondary_team_lead}</td>
-      <td>{project.tester_name}</td>
-      <td>{formatDate(project.start_date)}</td>
-      <td>{formatDate(project.internal_end_date)}</td>
-      <td>{formatDate(project.client_end_date)}</td>
-      <td>{project.technical_skill_stack}</td>
-      <td>{project.project_type}</td>
-      <td>{project.application_type}</td>
-      <td>{project.status || "Not Set"}</td> {/* Display status */}
-      {(role === "teamlead" || role === "admin") && (
-        <td>
-          <button
-            className="btn btn-info"
-            style={{ fontSize: "12px" }}
-            onClick={() => handleStatusClick(project)}  // Pass the project object for status change
-          >
-            {project.status ? "Update Status" : "Change Status"}
-          </button>
-        </td>
-      )}
+            <tbody>
+              {filteredProjects.map((project, index) => (
+                <tr key={project.id}>
+                  <td>{index + 1}</td>
+                  <td>{project.project_name}</td>
+                  <td>{project.primary_team_lead}</td>
+                  <td>{project.secondary_team_lead}</td>
+                  <td>{project.tester_name}</td>
+                  <td>{formatDate(project.start_date)}</td>
+                  <td>{formatDate(project.internal_end_date)}</td>
+                  <td>{formatDate(project.client_end_date)}</td>
+                  <td>{project.technical_skill_stack}</td>
+                  <td>{project.project_type}</td>
+                  <td>{project.application_type}</td>
+                  <td>{project.status || "Not Set"}</td> {/* Display status */}
+                  {(role === "teamlead" || role === "admin") && (
+                    <td>
+                      <button
+                        className="btn btn-info"
+                        style={{ fontSize: "12px" }}
+                        onClick={() => handleStatusClick(project)}
+                      >
+                        {project.status ? "Update Status" : "Change Status"}
+                      </button>
+                    </td>
+                  )}
 
-      <td>
-        <button
-          className="btn btn-info btn-sm me-2"
-          onClick={() => handleCommentClick(project)} // Add comment for the project
-        >
-          Add
-        </button>
-      </td>
+                  <td>
+                    <button
+                      className="btn btn-info btn-sm me-2"
+                      onClick={() => handleCommentClick(project)}
+                    >
+                      Add
+                    </button>
+    
+                  </td>
+               
+               <td>
+  <button
+    className="btn btn-info btn-sm me-2"
+    onClick={() => handleResponseClick(project.comment_id, project.project_id)}  
+  >
+    Response
+  </button>
+</td>
 
-      <td>
-        <button
-          className="btn btn-info btn-sm me-2"
-          onClick={() => handleResponseClick(project.id)} // Pass project_id for response fetching
-        >
-          Response
-        </button>
-      </td>
+   <td><button class="btn btn-success">Progress</button></td>
 
-      {/* <td><button class="btn btn-success">Progress</button></td> */}
+                  <td className="d-flex justify-content-start mt-3">
+                    <button
+                      className="btn btn-warning btn-sm me-2"
+                      onClick={() => handleEdit(project)}
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
 
-      <td className="d-flex justify-content-start mt-3">
-        <button
-          className="btn btn-warning btn-sm me-2"
-          onClick={() => handleEdit(project)} // Open edit modal
-        >
-          <FontAwesomeIcon icon={faEdit} />
-        </button>
-
-        <button
-          className="btn btn-danger btn-sm"
-          onClick={() => handleDelete(project.id)} // Delete the project
-        >
-          <FontAwesomeIcon icon={faTrashAlt} />
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(project.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </div>
-<Modal
-  show={showResponseModal}
-  onHide={closeResponseModal}
-  className="project-details-modal"
-  dialogClassName="custom-modal-width" // Use a custom class for the modal width
->
+
+ <Modal show={showResponseModal} onHide={closeResponseModal}>
   <Modal.Header closeButton>
-    <Modal.Title>Responses for Project ID: {selectedProjectId}</Modal.Title>
+    <Modal.Title>Responses</Modal.Title>
   </Modal.Header>
   <Modal.Body>
     {responseData.length > 0 ? (
-      <table className="table table-bordered custom-response-table">
+      <table className="table table-bordered">
         <thead>
           <tr>
             <th>Response ID</th>
@@ -450,20 +438,9 @@ const handleResponseClick = async (project_id) => {
     )}
   </Modal.Body>
   <Modal.Footer>
-    <Button variant="secondary" onClick={closeResponseModal}>
-      Close
-    </Button>
+    <Button variant="secondary" onClick={closeResponseModal}>Close</Button>
   </Modal.Footer>
 </Modal>
-
-
-
-
-
-
-
-
-
 
 
 

@@ -104,6 +104,66 @@
     }
   }
   
-  .custom-width-141 {
-  width: 141%;
+/* Style for the modal width */
+.custom-modal-width .modal-dialog {
+  max-width: 90%; /* Increase this percentage to make the modal wider */
+  width: 90%; /* Optional: explicitly set the width for consistency */
+}
+
+/* Style for the table */
+.custom-response-table {
+  width: 100%; /* Ensure the table fills the available modal width */
+  border-collapse: collapse;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+}
+
+.custom-response-table th,
+.custom-response-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.custom-response-table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+}
+
+.custom-response-table td {
+  background-color: #ffffff;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+.custom-response-table tr:nth-child(even) td {
+  background-color: #f2f2f2;
+}
+
+.custom-response-table tr:hover {
+  background-color: #e9ecef;
+}
+
+.custom-response-table td {
+  word-wrap: break-word;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-response-table p {
+  font-size: 16px;
+  color: #555;
+}
+
+.custom-response-table .modal-footer {
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.custom-response-table .modal-footer button {
+  background-color: #007bff;
+  color: white;
+  border: none;
 }

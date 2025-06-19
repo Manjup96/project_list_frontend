@@ -3,9 +3,27 @@ import axios from "axios";
 import { baseUrl } from "../../Components/APIServices/APIServices"; // Ensure the baseUrl is correctly set
 import "./ProjectDetails.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrashAlt, faComment, faComments } from "@fortawesome/free-solid-svg-icons";
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import {
+  faEdit,
+  faTrashAlt,
+  faComment,
+  faComments,
+} from "@fortawesome/free-solid-svg-icons";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// ChartJS registration
+ChartJS.register(CategoryScale, LinearScale, LineElement, Title, Tooltip, Legend);
 
 const ProjectDetails = () => {
   const [projects, setProjects] = useState([]);
@@ -15,16 +33,14 @@ const ProjectDetails = () => {
   const [role, setRole] = useState(""); // State to manage the user role (admin/teamlead)
   const [statusDescription, setStatusDescription] = useState("");
   const [status, setStatus] = useState("All Statuses"); // Default to "All Statuses"
-  const [selectedProjectForStatus, setSelectedProjectForStatus] = useState(null); // Holds the project selected for status update
+  const [selectedProjectForStatus, setSelectedProjectForStatus] =
+    useState(null); // Holds the project selected for status update
   const [showStatusModal, setShowStatusModal] = useState(false); // Controls the visibility of the status update modal
   const [statusPercentage, setStatusPercentage] = useState(""); // State for the percentage input
   const [user, setUser] = useState(null);
-const [selectedCommentId, setSelectedCommentId] = useState(null);
-const [selectedProjectId, setSelectedProjectId] = useState(null);
 
-
-    const [showResponseModal, setShowResponseModal] = useState(false); // Modal visibility state
-
+  const [showResponseModal, setShowResponseModal] = useState(false); // Modal visibility state
+  const [showProgressModal, setShowProgressModal] = useState(false);
 
   // Fetch all projects from the backend when the component is mounted
   useEffect(() => {
@@ -33,13 +49,6 @@ const [selectedProjectId, setSelectedProjectId] = useState(null);
     setRole(storedUser?.role || "");
     fetchProjects(); // Initially fetch all projects
   }, []);
-
-     useEffect(() => {
-        if (selectedProjectId && selectedCommentId) {
-            fetchComments(selectedProjectId); // Fetch comments related to the project
-        }
-    }, [selectedProjectId, selectedCommentId]);
-
 
   // Fetch projects from the backend based on status filter
   const fetchProjects = async () => {
@@ -186,25 +195,28 @@ const [selectedProjectId, setSelectedProjectId] = useState(null);
   const filteredProjects = projects.filter((project) => {
     return (
       project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.primary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.secondary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.primary_team_lead
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      project.secondary_team_lead
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       project.tester_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
-
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
-  const [selectedProjectForComment, setSelectedProjectForComment] = useState(null);
+  const [selectedProjectForComment, setSelectedProjectForComment] =
+    useState(null);
   const [showViewCommentsModal, setShowViewCommentsModal] = useState(false);
   const [responseData, setResponseData] = useState([]);
-
 
   const fetchComments = async (projectId) => {
     try {
       const response = await axios.post(`${baseUrl}/get_comments.php`, {
-        project_id: projectId
+        project_id: projectId,
       });
 
       if (response.data.status === "success") {
@@ -225,7 +237,7 @@ const [selectedProjectId, setSelectedProjectId] = useState(null);
         project_id: selectedProjectForComment.id,
         comment: comment,
         user_id: user?.id,
-        name: user?.name
+        name: user?.name,
       });
 
       if (response.data.status === "success") {
@@ -255,40 +267,83 @@ const [selectedProjectId, setSelectedProjectId] = useState(null);
     setShowViewCommentsModal(true);
   };
 
+  const handleProgressClick = (project) => {
+    setSelectedProject(project);
+    setShowProgressModal(true); // Show the progress modal
+  };
 
-const handleResponseClick = async (project_id) => {
-  if (!project_id) {
-    alert("Project ID is missing.");
-    return;
-  }
+  const closeProgressModal = () => {
+    setShowProgressModal(false); // Close progress modal
+    setSelectedProject(null); // Clear the selected project
+  };
 
-  setSelectedProjectId(project_id); // Set the project ID to state
-  setShowResponseModal(true); // Show the modal
+    // Format date to Indian format (dd-mm-yyyy)
+  const formatDateToIndian = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}-${month}-${year}`;
+  };
 
-  try {
-    const response = await axios.post(`${baseUrl}/get_responses.php`, {
-      project_id: project_id,  // Ensure project_id is being passed correctly
-    });
 
-    console.log("Response Data:", response.data);
+    const generateProgressChartData = () => {
+    const weekLabels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"];
+    const statusData = [10, 30, 50, 70, 90]; // Example status data for the weeks
+    const plannedTimelineData = [0, 20, 40, 60, 80]; // Example planned data for the weeks
 
-    if (response.data.status === "success") {
-      setResponseData(response.data.data); // Set the response data in state
-    } else {
-      alert("Failed to fetch response data.");
+    return {
+      labels: weekLabels,
+      datasets: [
+        {
+          label: "Status Percentage",
+          data: statusData,
+          fill: false,
+          borderColor: "rgba(75, 192, 192, 1)",
+          tension: 0.1,
+        },
+        {
+          label: "Planned Timeline",
+          data: plannedTimelineData,
+          fill: false,
+          borderColor: "rgba(255, 99, 132, 1)",
+          tension: 0.1,
+        },
+      ],
+    };
+  };
+
+  const handleResponseClick = async (comment_id, project_id) => {
+    if (!comment_id) {
+      alert("Comment ID is missing.");
+      return;
     }
-  } catch (error) {
-    console.error("Error fetching response data:", error);
-    alert("Error fetching response data.");
-  }
-};
 
+    if (!project_id) {
+      alert("Project ID is missing.");
+      return;
+    }
 
+    // Log the projectId to the console to see its value
+    console.log("Project ID: ", project_id);
 
+    setShowResponseModal(true); // Show the response modal
 
+    try {
+      // Make the POST request with comment_id and project_id
+      const response = await axios.post(`${baseUrl}/get_responses.php`, {
+        comment_id: comment_id, // Ensure comment_id is passed correctly
+        project_id: project_id, // Pass the project_id as well
+      });
 
-
-
+      if (response.data.status === "success") {
+        setResponseData(response.data.data); // Set the response data in state
+      } else {
+        alert("Failed to fetch response data.");
+      }
+    } catch (error) {
+      console.error("Error fetching response data:", error);
+      alert("Error fetching response data.");
+    }
+  };
 
   // Close the response modal
   const closeResponseModal = () => {
@@ -340,132 +395,148 @@ const handleResponseClick = async (project_id) => {
                 )}
                 <th>Comments</th>
                 <th>Response</th>
-                {/* <th>View Progress</th> */}
+                <th>View Progress</th>
                 <th>Action</th>
               </tr>
             </thead>
 
-        <tbody>
-  {filteredProjects.map((project, index) => (
-    <tr key={project.id}>
-      <td>{index + 1}</td>
-      <td>{project.project_name}</td>
-      <td>{project.primary_team_lead}</td>
-      <td>{project.secondary_team_lead}</td>
-      <td>{project.tester_name}</td>
-      <td>{formatDate(project.start_date)}</td>
-      <td>{formatDate(project.internal_end_date)}</td>
-      <td>{formatDate(project.client_end_date)}</td>
-      <td>{project.technical_skill_stack}</td>
-      <td>{project.project_type}</td>
-      <td>{project.application_type}</td>
-      <td>{project.status || "Not Set"}</td> {/* Display status */}
-      {(role === "teamlead" || role === "admin") && (
-        <td>
-          <button
-            className="btn btn-info"
-            style={{ fontSize: "12px" }}
-            onClick={() => handleStatusClick(project)}  // Pass the project object for status change
-          >
-            {project.status ? "Update Status" : "Change Status"}
-          </button>
-        </td>
-      )}
+            <tbody>
+              {filteredProjects.map((project, index) => (
+                <tr key={project.id}>
+                  <td>{index + 1}</td>
+                  <td>{project.project_name}</td>
+                  <td>{project.primary_team_lead}</td>
+                  <td>{project.secondary_team_lead}</td>
+                  <td>{project.tester_name}</td>
+                  <td>{formatDate(project.start_date)}</td>
+                  <td>{formatDate(project.internal_end_date)}</td>
+                  <td>{formatDate(project.client_end_date)}</td>
+                  <td>{project.technical_skill_stack}</td>
+                  <td>{project.project_type}</td>
+                  <td>{project.application_type}</td>
+                  <td>{project.status || "Not Set"}</td> {/* Display status */}
+                  {(role === "teamlead" || role === "admin") && (
+                    <td>
+                      <button
+                        className="btn btn-info"
+                        style={{ fontSize: "12px" }}
+                        onClick={() => handleStatusClick(project)}
+                      >
+                        {project.status ? "Update Status" : "Change Status"}
+                      </button>
+                    </td>
+                  )}
+                  <td>
+                    <button
+                      className="btn btn-info btn-sm me-2"
+                      onClick={() => handleCommentClick(project)}
+                    >
+                      Add
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-info btn-sm me-2"
+                      onClick={() =>
+                        handleResponseClick(
+                          project.comment_id,
+                          project.project_id
+                        )
+                      }
+                    >
+                      Response
+                    </button>
+                  </td>
+                  {/* <td><button class="btn btn-success">Progress</button></td> */}
+                  <td>
+                    <button
+                      className="btn btn-success"
+                      onClick={() => handleProgressClick(project)}
+                    >
+                      Progress
+                    </button>
+                  </td>
+                  <td className="d-flex justify-content-start mt-3">
+                    <button
+                      className="btn btn-warning btn-sm me-2"
+                      onClick={() => handleEdit(project)}
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
 
-      <td>
-        <button
-          className="btn btn-info btn-sm me-2"
-          onClick={() => handleCommentClick(project)} // Add comment for the project
-        >
-          Add
-        </button>
-      </td>
-
-      <td>
-        <button
-          className="btn btn-info btn-sm me-2"
-          onClick={() => handleResponseClick(project.id)} // Pass project_id for response fetching
-        >
-          Response
-        </button>
-      </td>
-
-      {/* <td><button class="btn btn-success">Progress</button></td> */}
-
-      <td className="d-flex justify-content-start mt-3">
-        <button
-          className="btn btn-warning btn-sm me-2"
-          onClick={() => handleEdit(project)} // Open edit modal
-        >
-          <FontAwesomeIcon icon={faEdit} />
-        </button>
-
-        <button
-          className="btn btn-danger btn-sm"
-          onClick={() => handleDelete(project.id)} // Delete the project
-        >
-          <FontAwesomeIcon icon={faTrashAlt} />
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(project.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </div>
-<Modal
-  show={showResponseModal}
-  onHide={closeResponseModal}
-  className="project-details-modal"
-  dialogClassName="custom-modal-width" // Use a custom class for the modal width
->
-  <Modal.Header closeButton>
-    <Modal.Title>Responses for Project ID: {selectedProjectId}</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {responseData.length > 0 ? (
-      <table className="table table-bordered custom-response-table">
-        <thead>
-          <tr>
-            <th>Response ID</th>
-            <th>Response Text</th>
-            <th>Responded By</th>
-            <th>Response Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {responseData.map((response) => (
-            <tr key={response.id}>
-              <td>{response.id}</td>
-              <td>{response.response_text}</td>
-              <td>{response.responded_by}</td>
-              <td>{new Date(response.response_date).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ) : (
-      <p>No responses available.</p>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={closeResponseModal}>
-      Close
-    </Button>
-  </Modal.Footer>
-</Modal>
 
-
-
-
-
-
-
-
-
-
-
+      {/* Progress Modal */}
+      {showProgressModal && selectedProject && (
+        <Modal show={showProgressModal} onHide={closeProgressModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              Project Progress - {selectedProject.project_name}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <h5>Progress for {selectedProject.project_name}</h5>
+            <p>Status: {selectedProject.status}</p>
+            <p>Percentage: {selectedProject.status_percentage}%</p>
+            <div>
+              <Line data={generateProgressChartData()} />
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeProgressModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+      <Modal show={showResponseModal} onHide={closeResponseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Responses</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {responseData.length > 0 ? (
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Response ID</th>
+                  <th>Response Text</th>
+                  <th>Responded By</th>
+                  <th>Response Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {responseData.map((response) => (
+                  <tr key={response.id}>
+                    <td>{response.id}</td>
+                    <td>{response.response_text}</td>
+                    <td>{response.responded_by}</td>
+                    <td>{new Date(response.response_date).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No responses available.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeResponseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Status Update Modal */}
       {showStatusModal && selectedProjectForStatus && (
@@ -847,7 +918,6 @@ const handleResponseClick = async (project_id) => {
         </div>
       )}
 
-
       <Modal show={showCommentModal} onHide={() => setShowCommentModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Add Comment</Modal.Title>
@@ -865,7 +935,10 @@ const handleResponseClick = async (project_id) => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCommentModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowCommentModal(false)}
+          >
             Close
           </Button>
           <Button variant="primary" onClick={handleAddComment}>
@@ -875,15 +948,24 @@ const handleResponseClick = async (project_id) => {
       </Modal>
 
       {/* View Comments Modal */}
-      <Modal show={showViewCommentsModal} onHide={() => setShowViewCommentsModal(false)} size="lg">
+      <Modal
+        show={showViewCommentsModal}
+        onHide={() => setShowViewCommentsModal(false)}
+        size="lg"
+      >
         <Modal.Header closeButton>
-          <Modal.Title>Comments for {selectedProjectForComment?.project_name}</Modal.Title>
+          <Modal.Title>
+            Comments for {selectedProjectForComment?.project_name}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {comments.length > 0 ? (
             <div className="comment-list">
               {comments.map((comment, index) => (
-                <div key={index} className="comment-item mb-3 p-3 border rounded">
+                <div
+                  key={index}
+                  className="comment-item mb-3 p-3 border rounded"
+                >
                   <div className="d-flex justify-content-between">
                     <strong>{comment.name}</strong>
                     <small className="text-muted">
@@ -899,7 +981,10 @@ const handleResponseClick = async (project_id) => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowViewCommentsModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowViewCommentsModal(false)}
+          >
             Close
           </Button>
         </Modal.Footer>

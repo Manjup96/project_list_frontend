@@ -42,8 +42,15 @@ const AdminDashboard = () => {
 
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [selectedComment, setSelectedComment] = useState(null);
+  const [showAllProjects, setShowAllProjects] = useState(false);
 
   const [responseText, setResponseText] = useState("");
+
+  const toggleShowAllProjects = () => {
+  setShowAllProjects(!showAllProjects);
+};
+
+const displayedProjects = showAllProjects ? projects : projects.slice(0, 8);
 
   const colors = [
     "bg-warning",
@@ -69,16 +76,19 @@ const AdminDashboard = () => {
       }
     };
 
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch(`${baseUrl}/getProjectNamesAdmin.php`);
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-        if (data.projects) setProjects(data.projects);
-      } catch (error) {
-        console.error("Error fetching project names:", error);
-      }
-    };
+   const fetchProjects = async () => {
+  try {
+    const response = await fetch(`${baseUrl}/getProjectNamesAdmin.php`);
+    if (!response.ok) throw new Error("Network response was not ok");
+    const data = await response.json();
+    if (data.projects) {
+      const reversedProjects = [...data.projects].reverse(); // Reverse the array
+      setProjects(reversedProjects);
+    }
+  } catch (error) {
+    console.error("Error fetching project names:", error);
+  }
+};
 
     fetchCounts();
     fetchProjects();
@@ -96,23 +106,46 @@ const AdminDashboard = () => {
     return Math.floor(diffInDays / 7);
   }
 
-  function generateWeekLabels(start, end) {
-    const labels = [];
-    const startDate = new Date(start);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(end);
-    endDate.setHours(0, 0, 0, 0);
+  // function generateWeekLabels(start, end) {
+  //   const labels = [];
+  //   const startDate = new Date(start);
+  //   startDate.setHours(0, 0, 0, 0);
+  //   const endDate = new Date(end);
+  //   endDate.setHours(0, 0, 0, 0);
 
-    let current = new Date(startDate);
-    let weekCount = 0; // Start from Week 0
+  //   let current = new Date(startDate);
+  //   let weekCount = 0; // Start from Week 0
 
-    while (current <= endDate) {
-      labels.push(`Week ${weekCount}`);
-      current.setDate(current.getDate() + 7);
-      weekCount++;
-    }
-    return labels;
+  //   while (current <= endDate) {
+  //     labels.push(`Week ${weekCount}`);
+  //     current.setDate(current.getDate() + 7);
+  //     weekCount++;
+  //   }
+  //   return labels;
+  // }
+
+  function generateWeekLabels(start) {
+  const labels = [];
+  const startDate = new Date(start);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date();
+  endDate.setHours(0, 0, 0, 0); // Only up to current date
+
+  let current = new Date(startDate);
+  let weekCount = 0; // Start from Week 0
+
+  while (current <= endDate) {
+    labels.push(`Week ${weekCount}`);
+    current.setDate(current.getDate() + 7);
+    weekCount++;
   }
+  return labels;
+}
+
+
+
+
+
 
   const [user, setUser] = useState(null);
 
@@ -132,6 +165,8 @@ const AdminDashboard = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch status history");
       const data = await response.json();
+    console.log("data", JSON.stringify(data, null, 2));
+
       setStatusHistory(data);
     } catch (error) {
       console.error("Error fetching project status history:", error);
@@ -148,60 +183,119 @@ const AdminDashboard = () => {
   const [comment, setComment] = useState("");
   const [showCommentModal, setShowCommentModal] = useState(false);
 
-  const handleSubmitResponse = () => {
+//  const handleSubmitResponse = () => {
+//     if (!responseText) {
+//       alert("Please enter a response.");
+//       return;
+//     }
+
+//     // Ensure selectedComment is not null or undefined
+//     if (!selectedComment || !selectedComment.id) {
+//       console.error("Comment ID is missing.");
+//       return;
+//     }
+
+//     // Prepare the response data to be sent to the backend
+//     const responseData = {
+//       comment_id: selectedComment.id,  // Ensure it's correctly passed from selectedComment
+//       response_text: responseText,     // Get the response text from the state
+//       responded_by: "admin",           // Replace this with the logged-in user (e.g., dynamic username)
+//       project_id: selectedProject.project_id,  // Add project_id from the selected project
+//       user_id: user?.id,               // Add the user_id (logged-in user)
+//     };
+
+//     console.log("Sending response data: ", responseData); // Log the data for debugging
+
+//     // Send the response data to the PHP backend via a POST request
+//     fetch(`${baseUrl}/add_response.php`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(responseData),
+//     })
+//       .then((response) => response.json())
+//       .then((data) => {
+//         if (data.status === "success") {
+//           console.log("Response saved successfully:", data.message);
+
+//           // Show success alert
+//           alert("Response submitted successfully!");
+
+//           // Close the modal after successful submission
+//           setShowResponseModal(false); // Close the modal
+//           setSelectedComment(null); // Reset selected comment
+//         } else {
+//           console.error("Error saving response:", data.message);
+
+//           // Show error alert
+//           alert("Error submitting response: " + data.message);
+//         }
+//       })
+//       .catch((error) => {
+//         console.error("Error:", error);
+
+//         // Show error alert in case of a network or unexpected error
+//         alert("Error: Unable to submit response.");
+//       });
+//   };
+
+const handleSubmitResponse = () => {
     if (!responseText) {
-      alert("Please enter a response.");
-      return;
+        alert("Please enter a response.");
+        return;
     }
 
-    // Ensure selectedComment is not null or undefined
     if (!selectedComment || !selectedComment.id) {
-      console.error("Comment ID is missing.");
-      return;
+        console.error("Comment ID is missing.");
+        return;
     }
 
-    // Prepare the response data to be sent to the backend
+    if (!selectedProject || !selectedProject.project_id) {
+        console.error("Project ID is missing.");
+        return;
+    }
+
+    if (!user || !user.id) {
+        console.error("User ID is missing.");
+        return;
+    }
+
+    // Prepare the response data
     const responseData = {
-      comment_id: selectedComment.id, // Ensure it's correctly passed from selectedComment
-      response_text: responseText, // Get the response text from the state
-      responded_by: "admin", // Replace this with the logged-in user (e.g., dynamic username)
+        comment_id: selectedComment.id,
+        response_text: responseText,
+        responded_by: "admin",  // You can dynamically fetch the admin or logged-in user's name
+        project_id: selectedProject.project_id,
+        user_id: user.id,
     };
 
-    console.log("Sending response data: ", responseData); // Log the data for debugging
+    console.log("Sending response data: ", responseData);
 
-    // Send the response data to the PHP backend via a POST request
     fetch(`${baseUrl}/add_response.php`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(responseData),
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(responseData),
     })
-      .then((response) => response.json())
-      .then((data) => {
+    .then((response) => response.json())
+    .then((data) => {
         if (data.status === "success") {
-          console.log("Response saved successfully:", data.message);
-
-          // Show success alert
-          alert("Response submitted successfully!");
-
-          // Close the modal after successful submission
-          setShowResponseModal(false); // Close the modal
-          setSelectedComment(null); // Reset selected comment
+            alert("Response submitted successfully!");
+            setShowResponseModal(false);  // Close the modal
+            setSelectedComment(null);  // Reset selected comment
         } else {
-          console.error("Error saving response:", data.message);
-
-          // Show error alert
-          alert("Error submitting response: " + data.message);
+            console.error("Error saving response:", data.message);
+            alert("Error submitting response: " + data.message);
         }
-      })
-      .catch((error) => {
+    })
+    .catch((error) => {
         console.error("Error:", error);
-
-        // Show error alert in case of a network or unexpected error
         alert("Error: Unable to submit response.");
-      });
-  };
+    });
+};
+
 
   const fetchComments = async (projectId) => {
     try {
@@ -298,36 +392,78 @@ const AdminDashboard = () => {
         )
       : [];
 
+  // const statusByWeek = {};
+  // weekLabels.forEach((week) => {
+  //   statusByWeek[week] = 0;
+  // });
+
   const statusByWeek = {};
-  weekLabels.forEach((week) => {
-    statusByWeek[week] = 0;
-  });
+weekLabels.forEach((week) => {
+  statusByWeek[week] = 0;
+});
+
+  // if (selectedProject && statusHistory.length > 0) {
+  //   const startDate = new Date(selectedProject.start_date);
+  //   const weekStatusMap = {};
+
+  //   statusHistory.forEach(({ updated_at, status_percentage }) => {
+  //     const date = new Date(updated_at);
+  //     if (date < startDate) return;
+
+  //     const weekNum = getWeekFromStart(date, startDate);
+  //     const weekLabel = `Week ${weekNum}`;
+
+  //     if (weekLabel in statusByWeek) {
+  //       if (
+  //         !weekStatusMap[weekLabel] ||
+  //         new Date(updated_at) > new Date(weekStatusMap[weekLabel].updated_at)
+  //       ) {
+  //         weekStatusMap[weekLabel] = { status_percentage, updated_at };
+  //       }
+  //     }
+  //   });
+
+  //   Object.keys(weekStatusMap).forEach((week) => {
+  //     statusByWeek[week] = weekStatusMap[week].status_percentage;
+  //   });
+  // }
 
   if (selectedProject && statusHistory.length > 0) {
-    const startDate = new Date(selectedProject.start_date);
-    const weekStatusMap = {};
+  const startDate = new Date(selectedProject.start_date);
+  const weekStatusMap = {};
 
-    statusHistory.forEach(({ updated_at, status_percentage }) => {
-      const date = new Date(updated_at);
-      if (date < startDate) return;
+  // Sort status history by created_at to ensure chronological order
+  const sortedHistory = [...statusHistory].sort((a, b) => 
+    new Date(a.created_at) - new Date(b.created_at)
+  );
 
-      const weekNum = getWeekFromStart(date, startDate);
-      const weekLabel = `Week ${weekNum}`;
+  sortedHistory.forEach(({ created_at, status_percentage }) => {
+    const date = new Date(created_at);
+    if (date < startDate) return;
 
-      if (weekLabel in statusByWeek) {
-        if (
-          !weekStatusMap[weekLabel] ||
-          new Date(updated_at) > new Date(weekStatusMap[weekLabel].updated_at)
-        ) {
-          weekStatusMap[weekLabel] = { status_percentage, updated_at };
-        }
-      }
-    });
+    const weekNum = getWeekFromStart(date, startDate);
+    const weekLabel = `Week ${weekNum}`;
 
-    Object.keys(weekStatusMap).forEach((week) => {
-      statusByWeek[week] = weekStatusMap[week].status_percentage;
-    });
-  }
+    if (weekLabel in statusByWeek) {
+      // Always take the latest status for each week (since we sorted by date)
+      weekStatusMap[weekLabel] = { status_percentage, created_at };
+    }
+  });
+
+  // Apply the status percentages to each week
+  Object.keys(weekStatusMap).forEach((week) => {
+    statusByWeek[week] = weekStatusMap[week].status_percentage;
+  });
+   // Carry forward status percentages to subsequent weeks if no update exists
+  let lastKnownStatus = 0;
+  weekLabels.forEach((week) => {
+    if (weekStatusMap[week]) {
+      lastKnownStatus = weekStatusMap[week].status_percentage;
+    }
+    statusByWeek[week] = lastKnownStatus;
+  });
+}
+  
 
   weekLabels.sort((a, b) => {
     const numA = parseInt(a.split(" ")[1], 10);
@@ -336,36 +472,65 @@ const AdminDashboard = () => {
   });
 
   // Add the "Planned Timeline" line (0% to 100% over the course of the project)
-  const totalWeeks = weekLabels.length;
-  const plannedTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
-    return (index / (totalWeeks - 1)) * 100; // Distribute 0% to 100% equally across weeks
-  });
+  // const totalWeeks = weekLabels.length;
+  // const plannedTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
+  //   return (index / (totalWeeks - 1)) * 100; // Distribute 0% to 100% equally across weeks
+  // });
 
-  const statusTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
-    return statusByWeek[`Week ${index}`] || 0; // Ensure the status timeline starts from 0 and increments
-  });
+  const totalWeeks = weekLabels.length;
+const plannedTimeline = weekLabels.map((_, index) => {
+  return (index / (totalWeeks - 1)) * 100;
+});
+
+  // const statusTimeline = new Array(totalWeeks).fill(0).map((_, index) => {
+  //   return statusByWeek[`Week ${index}`] || 0; // Ensure the status timeline starts from 0 and increments
+  // });
+
+  const statusTimeline = weekLabels.map((week) => statusByWeek[week] || 0);
+
+  // const lineChartData = {
+  //   labels: weekLabels,
+  //   datasets: [
+  //     {
+  //       label: "Status Percentage",
+  //       data: statusTimeline, // Status Percentage data
+  //       fill: false,
+  //       borderColor: "rgba(75, 192, 192, 1)",
+  //       tension: 0.1,
+  //       pointBackgroundColor: "rgba(75, 192, 192, 1)",
+  //     },
+  //     {
+  //       label: "Planned Timeline",
+  //       data: plannedTimeline, // Planned Timeline data
+  //       fill: false,
+  //       borderColor: "rgba(255, 99, 132, 1)", // Red color for the planned timeline
+  //       tension: 0.1,
+  //       pointBackgroundColor: "rgba(255, 99, 132, 1)", // Red points
+  //     },
+  //   ],
+  // };
 
   const lineChartData = {
-    labels: weekLabels,
-    datasets: [
-      {
-        label: "Status Percentage",
-        data: statusTimeline, // Status Percentage data
-        fill: false,
-        borderColor: "rgba(75, 192, 192, 1)",
-        tension: 0.1,
-        pointBackgroundColor: "rgba(75, 192, 192, 1)",
-      },
-      {
-        label: "Planned Timeline",
-        data: plannedTimeline, // Planned Timeline data
-        fill: false,
-        borderColor: "rgba(255, 99, 132, 1)", // Red color for the planned timeline
-        tension: 0.1,
-        pointBackgroundColor: "rgba(255, 99, 132, 1)", // Red points
-      },
-    ],
-  };
+  labels: weekLabels,
+  datasets: [
+    {
+      label: "Status Percentage",
+      data: statusTimeline,
+      fill: false,
+      borderColor: "rgba(75, 192, 192, 1)",
+      tension: 0.1,
+      pointBackgroundColor: "rgba(75, 192, 192, 1)",
+    },
+    {
+      label: "Planned Timeline",
+      data: plannedTimeline,
+      fill: false,
+      borderColor: "rgba(255, 99, 132, 1)",
+      tension: 0.1,
+      pointBackgroundColor: "rgba(255, 99, 132, 1)",
+    },
+  ],
+};
 
   const lineChartOptions = {
     responsive: true,
@@ -397,6 +562,18 @@ const AdminDashboard = () => {
       difference,
     };
   });
+
+//   const statusDifference = weekLabels.map((week, index) => {
+//   const statusPercent = statusTimeline[index];
+//   const plannedPercent = plannedTimeline[index];
+//   const difference = statusPercent - plannedPercent;
+//   return {
+//     week,
+//     statusPercent,
+//     plannedPercent,
+//     difference,
+//   };
+// });
 
   const barChartData = {
     labels: projects.map((p) => p.project_name),
@@ -484,36 +661,47 @@ const AdminDashboard = () => {
         </div>
 
         {/* Dynamic Project Cards */}
-        <div className="AdminDashboard-cards2 row justify-content-center mt-3">
-          <h2 className="text-center">Project Status</h2>
-          {projects.map((project, index) => {
-            const colorClass = colors[index % colors.length];
-            const displayText =
-              project.status.toLowerCase() === "in progress"
-                ? `${project.status_percentage}%`
-                : project.status;
+       <div className="AdminDashboard-cards2 row justify-content-center mt-3">
+  <h2 className="text-center">Project Status</h2>
+  {displayedProjects.map((project, index) => {
+    const colorClass = colors[index % colors.length];
+    const displayText =
+      project.status.toLowerCase() === "in progress"
+        ? `${project.status_percentage}%`
+        : project.status;
 
-            return (
-              <div
-                key={index}
-                className="col-xl-3 col-lg-3 col-md-6 col-sm-12 mb-4"
-                style={{ cursor: "pointer" }}
-                onClick={() => openModal(project)}
-              >
-                <div
-                  className={`card ${colorClass} text-white`}
-                  style={{ borderRadius: "0px" }}
-                >
-                  <div className="card-body">
-                    <h5 className="card-title">{project.project_name}</h5>
-                    <h5 className="card-title">{project.project_id}</h5>
-                    <p className="card-text">{displayText}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+    return (
+      <div
+        key={index}
+        className="col-xl-3 col-lg-3 col-md-6 col-sm-12 mb-4"
+        style={{ cursor: "pointer" }}
+        onClick={() => openModal(project)}
+      >
+        <div
+          className={`card ${colorClass} text-white`}
+          style={{ borderRadius: "0px" }}
+        >
+          <div className="card-body">
+            <h5 className="card-title">{project.project_name}</h5>
+            <h5 className="card-title">{project.project_id}</h5>
+            <p className="card-text">{displayText}</p>
+          </div>
         </div>
+      </div>
+    );
+  })}
+  
+  {projects.length > 8 && (
+    <div className="text-center mt-3">
+      <button 
+        className="view-more-btn"
+        onClick={toggleShowAllProjects}
+      >
+        {showAllProjects ? 'Show Less' : 'View More'}
+      </button>
+    </div>
+  )}
+</div>
 
         {/* Bar Chart Section */}
         <div className="col-12 mt-4 d-flex justify-content-center">
@@ -681,7 +869,7 @@ const AdminDashboard = () => {
                           )}
 
                           {/* Response Modal */}
-                          <Modal
+                          {/* <Modal
                             show={showResponseModal}
                             onHide={handleCloseResponseModal}
                           >
@@ -697,7 +885,7 @@ const AdminDashboard = () => {
                                     : "N/A"}
                                 </h6>
 
-                                {/* ID Input Field */}
+                              
                                 <div className="mb-3">
                                   <label
                                     htmlFor="responseId"
@@ -717,16 +905,16 @@ const AdminDashboard = () => {
                                   />
                                 </div>
 
-                                {/* Textarea for Response */}
+                            
                                 <div className="mb-3">
                                   <textarea
                                     className="form-control"
                                     placeholder="Write your response..."
                                     rows="4"
-                                    value={responseText} // Bind the textarea to state
+                                    value={responseText} 
                                     onChange={(e) =>
                                       setResponseText(e.target.value)
-                                    } // Update the state when the user types
+                                    } 
                                   />
                                 </div>
                               </div>
@@ -745,7 +933,86 @@ const AdminDashboard = () => {
                                 Submit Response
                               </Button>
                             </Modal.Footer>
-                          </Modal>
+                          </Modal> */}
+<Modal show={showResponseModal} onHide={handleCloseResponseModal}>
+  <Modal.Header closeButton>
+    <Modal.Title>Respond to Comment</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <div>
+      <h6>
+        Comment:{" "}
+        {selectedComment ? selectedComment.comment : "N/A"}
+      </h6>
+
+      {/* Display project_id */}
+      {/* <div className="mb-3">
+        <label htmlFor="projectId" className="form-label">
+          Project ID
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="projectId"
+          placeholder="Project ID"
+          value={selectedProject ? selectedProject.project_id : ""}
+          readOnly
+        />
+      </div> */}
+
+      {/* Display comment_id */}
+      <div className="mb-3">
+        <label htmlFor="commentId" className="form-label">
+          Comment ID
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="commentId"
+          placeholder="Comment ID"
+          value={selectedComment ? selectedComment.id : ""}
+          readOnly
+        />
+      </div>
+
+      {/* Display user_id */}
+      {/* <div className="mb-3">
+        <label htmlFor="userId" className="form-label">
+          User ID
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="userId"
+          placeholder="User ID"
+          value={user ? user.id : ""}
+          readOnly
+        />
+      </div> */}
+
+      {/* Textarea for Response */}
+      <div className="mb-3">
+        <textarea
+          className="form-control"
+          placeholder="Write your response..."
+          rows="4"
+          value={responseText}
+          onChange={(e) => setResponseText(e.target.value)}
+        />
+      </div>
+    </div>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleCloseResponseModal}>
+      Close
+    </Button>
+    <Button variant="primary" onClick={handleSubmitResponse}>
+      Submit Response
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+
                         </div>
                       )}
                     </div>
