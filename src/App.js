@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'; // Import GoogleOAuth
 
 import Login from './Components/Login/Login';
 import AdminDashboard from './Components/Dashboard/AdminDashboard';
+import TestDashboard from './Components/Dashboard/TestDashboard';
 import TeamLeadDashboard from './Components/Dashboard/TeamLeadDashboard';
 import AddProject from './Pages/AddProject/AddProject';
 import ProjectDetails from './Pages/ProjectDetails/ProjectDetails';
@@ -60,6 +61,7 @@ function AppContent() {
           <LayoutWrapper>
             <Routes>
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                  <Route path="/test-dashboard" element={<TestDashboard />} />
                  <Route path="/leads" element={<Leads />} />
               <Route path="/teamlead-dashboard" element={<TeamLeadDashboard />} />
               <Route path="/add-project" element={<AddProject />} />

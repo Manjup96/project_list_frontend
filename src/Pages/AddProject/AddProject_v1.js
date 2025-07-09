@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./AddProject.css";
+import "./AddProject.css"; // Optional
 import { baseUrl } from "../../Components/APIServices/APIServices";
 
 const AddProject = () => {
@@ -14,8 +14,8 @@ const AddProject = () => {
     client_end_date: "",
     technical_skill_stack: "",
     project_type: "",
+    // application_type: "",
     application_type: [],
-    technology_partner: "",  // Added field
   });
 
   const [message, setMessage] = useState("");
@@ -23,31 +23,25 @@ const AddProject = () => {
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    setUser(storedUser);
+    setUser(storedUser); // Set the user state
   }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCheckboxChange = (value) => {
-    setFormData((prev) => {
-      const updated = prev.application_type.includes(value)
-        ? prev.application_type.filter((item) => item !== value)
-        : [...prev.application_type, value];
-      return { ...prev, application_type: updated };
-    });
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Submitting project with data:", formData);
+
     const submissionData = {
       ...formData,
-      user_id: user?.id || "",
-      email: user?.email || "",
-      name: user?.name || "",
+      user_id: user ? user.id : "",
+      email: user ? user.email : "",
+      name: user ? user.name : "",
     };
 
     try {
@@ -61,27 +55,45 @@ const AddProject = () => {
         }
       );
 
+      console.log("Response data:", response.data);
+      console.log("Response data Status:", response.data?.status);
+      console.log("API Response status:", response.status);
+
       if (response.status === 200 && response.data?.status === "success") {
         alert("✅ Project added successfully!");
         window.location.href = "/project-details";
       } else {
         alert(
-          "❌ Failed to add project: " +
-            (response.data?.message || "Unknown error")
+          "❌ Failed to add project. Reason: " +
+            (response.data?.message || "Unknown error occurred.")
+        );
+        alert(
+          "❌ Failed to add project. Reason: " +
+            (response.data?.message || "Unknown error occurred.")
         );
       }
     } catch (error) {
-      alert("❌ Error: " + (error.response?.data?.message || error.message));
+      console.error("Error during Axios request:", error);
+
+      if (error.response) {
+        // Log full error response details
+        console.error("Error Response Data:", error.response.data);
+        alert(
+          "❌ Server error: " +
+            (error.response.data?.message || "Unexpected error occurred.")
+        );
+      } else if (error.request) {
+        // Request made but no response received
+        console.error("No Response received:", error.request);
+        alert(
+          "❌ No response from server. Please check your network or server status."
+        );
+      } else {
+        // Other errors
+        alert("❌ Request Error: " + error.message);
+      }
     }
   };
-
-  const applicationOptions = [
-    "Website",
-    "Mobile Application",
-    "Desktop Application",
-    "Web Application",
-    "Other",
-  ];
 
   return (
     <div className="container mt-3">
@@ -90,16 +102,16 @@ const AddProject = () => {
           <div className="card shadow-lg p-4 rounded">
             <h3 className="text-center mb-4">Add Project</h3>
             {message && <div className="alert alert-info">{message}</div>}
-
+            {/* {user && <div className="alert alert-info">Welcome, {user.email}!</div>} */}
             <form onSubmit={handleSubmit}>
               <div className="row">
-                {/* Existing fields */}
                 <div className="col-md-4 mb-4">
                   <label htmlFor="project_name" className="form-label">
                     Project Name
                   </label>
                   <input
                     type="text"
+                    id="project_name"
                     name="project_name"
                     className="form-control"
                     value={formData.project_name}
@@ -113,6 +125,7 @@ const AddProject = () => {
                     Project Type
                   </label>
                   <select
+                    id="project_type"
                     name="project_type"
                     className="form-control"
                     value={formData.project_type}
@@ -125,74 +138,50 @@ const AddProject = () => {
                   </select>
                 </div>
 
-                {/* Multi-select Application/Website */}
+                {/* <div className="col-md-4 mb-4">
+                  <label htmlFor="application_type" className="form-label">Application/Website</label>
+                  <select id="application_type" name="application_type" className="form-control" value={formData.application_type} onChange={handleChange} required>
+                    <option value="">-- Select Type --</option>
+                    <option value="Website">Website</option>
+                    <option value="Mobile Application">Mobile Application</option>
+                    <option value="Desktop Application">Desktop Application</option>
+                    <option value="Web Application">Web Application</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div> */}
+
                 <div className="col-md-4 mb-4">
                   <label htmlFor="application_type" className="form-label">
                     Application/Website
                   </label>
-                  <div className="dropdown">
-                    <button
-                      className="form-control text-start dropdown-toggle"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      {formData.application_type.length > 0
-                        ? formData.application_type.join(", ")
-                        : "-- Select Type --"}
-                    </button>
-                    <ul
-                      className="dropdown-menu w-100 p-2"
-                      style={{ maxHeight: "200px", overflowY: "auto" }}
-                    >
-                      {applicationOptions.map((type) => (
-                        <li key={type} className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={type}
-                            checked={formData.application_type.includes(type)}
-                            onChange={() => handleCheckboxChange(type)}
-                          />
-                          <label className="form-check-label" htmlFor={type}>
-                            {type}
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* --- New Technology Partner dropdown --- */}
-                <div className="col-md-4 mb-4">
-                  <label htmlFor="technology_partner" className="form-label">
-                    Technology Partner
-                  </label>
                   <select
-                    id="technology_partner"
-                    name="technology_partner"
+                    id="application_type"
+                    name="application_type"
                     className="form-control"
-                    value={formData.technology_partner}
+                    value={formData.application_type}
                     onChange={handleChange}
+                    multiple
                     required
                   >
-                    <option value="">-- Select Technology Partner --</option>
-                    <option value="Short-Term Project">
-                      Short-Term Project
+                    <option value="Website">Website</option>
+                    <option value="Mobile Application">
+                      Mobile Application
                     </option>
-                    <option value="Long-Term Collaboration">
-                      Long-Term Collaboration
+                    <option value="Desktop Application">
+                      Desktop Application
                     </option>
+                    <option value="Web Application">Web Application</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
-                {/* Remaining existing fields */}
                 <div className="col-md-4 mb-4">
                   <label htmlFor="primary_team_lead" className="form-label">
                     Primary Team Lead
                   </label>
                   <input
                     type="text"
+                    id="primary_team_lead"
                     name="primary_team_lead"
                     className="form-control"
                     value={formData.primary_team_lead}
@@ -207,6 +196,7 @@ const AddProject = () => {
                   </label>
                   <input
                     type="text"
+                    id="secondary_team_lead"
                     name="secondary_team_lead"
                     className="form-control"
                     value={formData.secondary_team_lead}
@@ -220,6 +210,7 @@ const AddProject = () => {
                   </label>
                   <input
                     type="text"
+                    id="tester_name"
                     name="tester_name"
                     className="form-control"
                     value={formData.tester_name}
@@ -228,13 +219,11 @@ const AddProject = () => {
                 </div>
 
                 <div className="col-md-4 mb-4">
-                  <label
-                    htmlFor="technical_skill_stack"
-                    className="form-label"
-                  >
+                  <label htmlFor="technical_skill_stack" className="form-label">
                     Technical Skill Stack
                   </label>
                   <textarea
+                    id="technical_skill_stack"
                     name="technical_skill_stack"
                     className="form-control"
                     value={formData.technical_skill_stack}
@@ -250,6 +239,7 @@ const AddProject = () => {
                   </label>
                   <input
                     type="date"
+                    id="start_date"
                     name="start_date"
                     className="form-control"
                     value={formData.start_date}
@@ -264,6 +254,7 @@ const AddProject = () => {
                   </label>
                   <input
                     type="date"
+                    id="internal_end_date"
                     name="internal_end_date"
                     className="form-control"
                     value={formData.internal_end_date}
@@ -278,6 +269,7 @@ const AddProject = () => {
                   </label>
                   <input
                     type="date"
+                    id="client_end_date"
                     name="client_end_date"
                     className="form-control"
                     value={formData.client_end_date}

@@ -11,8 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import Pagination from "./Pagination";
-import { useLocation } from "react-router-dom";
+import Pagination from "react-bootstrap/Pagination";
 
 const ProjectDetails = () => {
   const [projects, setProjects] = useState([]);
@@ -29,16 +28,8 @@ const ProjectDetails = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [responseData, setResponseData] = useState({ status: "", data: [] });
+
   const [showResponseModal, setShowResponseModal] = useState(false); // Modal visibility state
-  const itemsPerPage = 5;
-  const [currentPage, setCurrentPage] = useState(1);
-  const location = useLocation();
-
-  // Initialize state from navigation or default to 'all'
-  const [statusFilter, setStatusFilter] = useState(
-    location.state?.initialStatus || "all"
-  );
-
   // Helper to check if two dates are within the same 7-day period from project start
   const isSameUpdateWeek = (date1, date2, projectStartDate) => {
     const start = new Date(projectStartDate);
@@ -145,7 +136,6 @@ const ProjectDetails = () => {
         technical_skill_stack: updatedProject.technical_skill_stack,
         project_type: updatedProject.project_type,
         application_type: updatedProject.application_type,
-        technology_partner: updatedProject.technology_partner, // ✅ Added line
         start_date: updatedProject.start_date,
         internal_end_date: updatedProject.internal_end_date,
         client_end_date: updatedProject.client_end_date,
@@ -259,27 +249,24 @@ const ProjectDetails = () => {
     }
   };
 
-  // Filter projects based on the search query
+ 
+
   const filteredProjects = projects.filter((project) => {
-    const matchesSearch =
-      project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.primary_team_lead
+    return (
+      (project.project_name || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      project.secondary_team_lead
+      (project.primary_team_lead || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      project.tester_name.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all"
-        ? true
-        : statusFilter === "exceed"
-        ? new Date(project.client_end_date) < new Date() // Check if project exceeded deadline
-        : project.status &&
-          project.status.toLowerCase() === statusFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus;
+      (project.secondary_team_lead || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (project.tester_name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (project.status || "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
   });
 
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -343,45 +330,7 @@ const ProjectDetails = () => {
     setShowViewCommentsModal(true);
   };
 
-  // const handleResponseClick = async (comment_id, project_id) => {
-  //   if (!comment_id) {
-  //     alert("Comment ID is missing.");
-  //     return;
-  //   }
 
-  //   if (!project_id) {
-  //     alert("Project ID is missing.");
-  //     return;
-  //   }
-
-  //   // Log the projectId to the console to see its value
-  //   console.log("Project ID: ", project_id);
-
-  //   setShowResponseModal(true); // Show the response modal
-
-  //   try {
-  //     // Make the POST request with comment_id and project_id
-  //     const response = await axios.post(`${baseUrl}/get_responses.php`, {
-  //       comment_id: comment_id,  // Ensure comment_id is passed correctly
-  //       project_id: project_id,  // Pass the project_id as well
-  //     });
-
-  //     if (response.data.status === "success") {
-  //       setResponseData(response.data.data); // Set the response data in state
-  //     } else {
-  //       alert("Failed to fetch response data.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching response data:", error);
-  //     alert("Error fetching response data.");
-  //   }
-  // };
-
-  // Close the response modal
-
-  // const closeResponseModal = () => {
-  //   setShowResponseModal(false);
-  // };
 
   const handleResponseClick = async (project_id) => {
     console.log("projectid", project_id);
@@ -412,17 +361,6 @@ const ProjectDetails = () => {
     setResponseData([]);
   };
 
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentProjects = filteredProjects.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
   return (
     <div className="project-details-container">
       <div className="project-details-header row justify-content-center">
@@ -430,70 +368,19 @@ const ProjectDetails = () => {
           Project Details
         </h2>
         <div className="col-lg-10">
-          {/* Search Input */}
-          <div className="row mb-3">
+          <div className="row">
             <div className="col-md-6">
-              <div className="search-input">
+              <div className="search-input mb-3">
                 <input
                   type="text"
                   className="search-bar form-control"
-                  placeholder="Search Projects..."
+                  placeholder="Search Projects and status..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
           </div>
-
-          {/* Status Filter Buttons - Centered */}
-          <div className="row mb-4">
-            <div className="col-md-12 text-center">
-              <div className="filter-status-group" role="group">
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "all" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("all")}
-                >
-                  All
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "in progress" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("in progress")}
-                >
-                  In Progress
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "completed" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("completed")}
-                >
-                  Completed
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "on hold" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("on hold")}
-                >
-                  On Hold
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "exceed" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("exceed")}
-                >
-                  Exceed Projects
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Your table goes here */}
         </div>
       </div>
 
@@ -513,7 +400,6 @@ const ProjectDetails = () => {
                 <th>Skill Stack</th>
                 <th>Project Type</th>
                 <th>App Type</th>
-                <th>Partner's</th>
                 <th>Status</th>
                 {(role === "teamlead" || role === "admin") && (
                   <th>Change Status</th>
@@ -523,10 +409,11 @@ const ProjectDetails = () => {
                 <th>Action</th>
               </tr>
             </thead>
+
             <tbody>
-              {currentProjects.map((project, index) => (
+              {filteredProjects.map((project, index) => (
                 <tr key={project.id}>
-                  <td>{indexOfFirst + index + 1}</td>
+                  <td>{index + 1}</td>
                   <td>{project.project_name}</td>
                   <td>{project.primary_team_lead}</td>
                   <td>{project.secondary_team_lead}</td>
@@ -537,8 +424,7 @@ const ProjectDetails = () => {
                   <td>{project.technical_skill_stack}</td>
                   <td>{project.project_type}</td>
                   <td>{project.application_type}</td>
-                     <td>{project.technology_partner}</td>
-                  <td>{project.status || "Not Set"}</td>
+                  <td>{project.status || "Not Set"}</td> {/* Display status */}
                   {(role === "teamlead" || role === "admin") && (
                     <td>
                       <button
@@ -559,6 +445,7 @@ const ProjectDetails = () => {
                     </button>
                   </td>
                   <td>
+
                     <button
                       className="btn btn-info btn-sm me-2"
                       onClick={() => handleResponseClick(project.id)}
@@ -574,6 +461,7 @@ const ProjectDetails = () => {
                     >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
+
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(project.id)}
@@ -588,40 +476,7 @@ const ProjectDetails = () => {
         </div>
       </div>
 
-      {/* <Modal show={showResponseModal} onHide={closeResponseModal}>
-  <Modal.Header closeButton>
-    <Modal.Title>Responses</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {responseData.length > 0 ? (
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>Response ID</th>
-            <th>Response Text</th>
-            <th>Responded By</th>
-            <th>Response Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {responseData.map((response) => (
-            <tr key={response.id}>
-              <td>{response.id}</td>
-              <td>{response.response_text}</td>
-              <td>{response.responded_by}</td>
-              <td>{new Date(response.response_date).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ) : (
-      <p>No responses available.</p>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={closeResponseModal}>Close</Button>
-  </Modal.Footer>
-</Modal> */}
+  
       <Modal show={showResponseModal} onHide={closeResponseModal} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Responses</Modal.Title>
@@ -681,7 +536,7 @@ const ProjectDetails = () => {
           tabIndex="-1"
         >
           <div className="modal-dialog">
-            <div className="modal-content">
+        <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Update Project Status</h5>
                 <button
@@ -792,7 +647,6 @@ const ProjectDetails = () => {
       )}
 
       {/* Update Project Modal */}
-
       {showUpdateModal && selectedProject && (
         <div
           className="modal fade show"
@@ -800,7 +654,7 @@ const ProjectDetails = () => {
           tabIndex="-1"
         >
           <div className="modal-dialog">
-            <div className="modal-content custom-width-141">
+            <div className="modal-content modal-width-50">
               <div className="modal-header">
                 <h5 className="modal-title">Update Project</h5>
                 <button
@@ -813,7 +667,7 @@ const ProjectDetails = () => {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    handleUpdate(selectedProject); // Submit update
+                    handleUpdate(selectedProject); // Call the handleUpdate function when the form is submitted
                   }}
                 >
                   <div className="row">
@@ -860,114 +714,33 @@ const ProjectDetails = () => {
                       </select>
                     </div>
 
-                    {/* ✅ Multi-select Application Type Dropdown */}
                     <div className="col-md-4 mb-3">
-                      <label className="form-label">Application/Website</label>
-                      <div className="dropdown">
-                        <button
-                          className="form-control text-start dropdown-toggle"
-                          type="button"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                        >
-                          {selectedProject.application_type &&
-                          selectedProject.application_type.length > 0
-                            ? Array.isArray(selectedProject.application_type)
-                              ? selectedProject.application_type.join(", ")
-                              : selectedProject.application_type
-                                  .split(",")
-                                  .map((s) => s.trim())
-                                  .join(", ")
-                            : "-- Select Type --"}
-                        </button>
-                        <ul
-                          className="dropdown-menu w-100 p-2"
-                          style={{ maxHeight: "200px", overflowY: "auto" }}
-                        >
-                          {[
-                            "Website",
-                            "Mobile Application",
-                            "Desktop Application",
-                            "Web Application",
-                            "Other",
-                          ].map((type) => {
-                            const appTypes = selectedProject.application_type
-                              ? Array.isArray(selectedProject.application_type)
-                                ? selectedProject.application_type
-                                : selectedProject.application_type
-                                    .split(",")
-                                    .map((s) => s.trim())
-                              : [];
-
-                            const checked = appTypes.includes(type);
-
-                            const handleCheckboxChange = () => {
-                              let newSelection;
-                              if (checked) {
-                                newSelection = appTypes.filter(
-                                  (item) => item !== type
-                                );
-                              } else {
-                                newSelection = [...appTypes, type];
-                              }
-                              setSelectedProject({
-                                ...selectedProject,
-                                application_type: newSelection,
-                              });
-                            };
-
-                            return (
-                              <li className="form-check" key={type}>
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  id={`appType-${type}`}
-                                  checked={checked}
-                                  onChange={handleCheckboxChange}
-                                />
-                                <label
-                                  className="form-check-label"
-                                  htmlFor={`appType-${type}`}
-                                >
-                                  {type}
-                                </label>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* ✅ Technology Partner Dropdown */}
-                    <div className="col-md-4 mb-3">
-                      <label
-                        htmlFor="technology_partner"
-                        className="form-label"
-                      >
-                        Technology Partner
+                      <label htmlFor="application_type" className="form-label">
+                        Application/Website
                       </label>
                       <select
-                        id="technology_partner"
-                        name="technology_partner"
+                        id="application_type"
+                        name="application_type"
                         className="form-control"
-                        value={selectedProject.technology_partner || ""}
+                        value={selectedProject.application_type}
                         onChange={(e) =>
                           setSelectedProject({
                             ...selectedProject,
-                            technology_partner: e.target.value,
+                            application_type: e.target.value,
                           })
                         }
                         required
                       >
-                        <option value="">
-                          -- Select Technology Partner --
+                        <option value="">-- Select Type --</option>
+                        <option value="Website">Website</option>
+                        <option value="Mobile Application">
+                          Mobile Application
                         </option>
-                        <option value="Short-Term Project">
-                          Short-Term Project
+                        <option value="Desktop Application">
+                          Desktop Application
                         </option>
-                        <option value="Long-Term Collaboration">
-                          Long-Term Collaboration
-                        </option>
+                        <option value="Web Application">Web Application</option>
+                        <option value="Other">Other</option>
                       </select>
                     </div>
 
@@ -1206,11 +979,6 @@ const ProjectDetails = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
     </div>
   );
 };

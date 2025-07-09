@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useNavigate } from 'react-router-dom';
+
 import { baseUrl } from "../APIServices/APIServices";
 import "./AdminDashboard.css";
 import axios from "axios";
@@ -46,7 +46,6 @@ const AdminDashboard = () => {
 
   const displayedProjects = showAllProjects ? projects : projects.slice(0, 8);
   const [responseText, setResponseText] = useState("");
-  const navigate = useNavigate();
 
   const colors = [
     "bg-warning",
@@ -602,27 +601,21 @@ const AdminDashboard = () => {
   };
 
   const cardData = [
-    { title: "Projects", count: projectCount, bgClass: "bg-secondary", path: "/project-details" },
+    { title: "Projects", count: projectCount, bgClass: "bg-secondary" },
     {
       title: "Exceed Project Development",
       count: exceedCount,
       bgClass: "bg-primary",
-      path: "/project-details",
-      statusFilter: "exceed" // Add this
     },
     {
       title: "Projects Completed",
       count: completedCount,
       bgClass: "bg-success",
-      path: "/project-details",
-      statusFilter: "completed",
     },
     {
       title: "Projects Inprogress",
       count: inprogressCount,
       bgClass: "bg-secondary",
-      path: "/project-details",
-      statusFilter: "in progress",
     },
   ];
 
@@ -640,12 +633,7 @@ const AdminDashboard = () => {
             <div
               key={index}
               className="AdminDashboard-card col-xl-3 col-lg-3 col-md-6 col-sm-12 mb-4"
-                  onClick={() => navigate(card.path, { 
-      state: { initialStatus: card.statusFilter } 
-    })}
-
-            style={{ cursor: 'pointer' }} // Add pointer cursor to indicate clickable
-        >
+            >
               <div
                 className={`card ${card.bgClass} text-white`}
                 style={{ borderRadius: "0px" }}
