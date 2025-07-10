@@ -2,7 +2,7 @@
 
 /* Container styles */
 .project-details-container {
-    margin-top: 20px;
+    margin-top: -10px;
     padding: 20px;
   }
 
@@ -87,6 +87,9 @@
     display: flex;
     justify-content: center;
     margin-left: 15%;
+     /* Remove width and add overflow styles */
+  width: 100%;
+  overflow-x: auto;
   }
   
   .project-table {
