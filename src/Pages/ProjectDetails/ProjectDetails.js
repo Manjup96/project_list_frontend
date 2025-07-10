@@ -260,27 +260,28 @@ const ProjectDetails = () => {
   };
 
   // Filter projects based on the search query
-  const filteredProjects = projects.filter((project) => {
-    const matchesSearch =
-      project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.primary_team_lead
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      project.secondary_team_lead
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      project.tester_name.toLowerCase().includes(searchQuery.toLowerCase());
+const filteredProjects = projects.filter((project) => {
+  const matchesSearch =
+    project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.primary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.secondary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.tester_name.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === "all"
-        ? true
-        : statusFilter === "exceed"
-        ? new Date(project.client_end_date) < new Date() // Check if project exceeded deadline
-        : project.status &&
-          project.status.toLowerCase() === statusFilter.toLowerCase();
+   const matchesStatus =
+    statusFilter === "all"
+      ? true
+      : statusFilter === "exceed"
+      ? new Date(project.client_end_date) < new Date()
+      : statusFilter === "short-term"
+      ? project.technology_partner === "Short-Term Project"
+      : statusFilter === "long-term"
+      ? project.technology_partner === "Long-Term Collaboration"
+      : project.status &&
+        project.status.toLowerCase() === statusFilter.toLowerCase();
 
-    return matchesSearch && matchesStatus;
-  });
+  return matchesSearch && matchesStatus;
+});
+
 
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState("");
@@ -446,52 +447,56 @@ const ProjectDetails = () => {
           </div>
 
           {/* Status Filter Buttons - Centered */}
-          <div className="row mb-4">
-            <div className="col-md-12 text-center">
-              <div className="filter-status-group" role="group">
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "all" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("all")}
-                >
-                  All
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "in progress" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("in progress")}
-                >
-                  In Progress
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "completed" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("completed")}
-                >
-                  Completed
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "on hold" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("on hold")}
-                >
-                  On Hold
-                </button>
-                <button
-                  className={`filter-status-btn ${
-                    statusFilter === "exceed" ? "filter-status-active" : ""
-                  }`}
-                  onClick={() => setStatusFilter("exceed")}
-                >
-                  Exceed Projects
-                </button>
-              </div>
-            </div>
-          </div>
+         <div className="row mb-4">
+  <div className="col-md-12 text-center">
+    <div className="filter-status-group" role="group">
+      <button
+        className={`filter-status-btn ${statusFilter === "all" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("all")}
+      >
+        All
+      </button>
+      <button
+        className={`filter-status-btn ${statusFilter === "in progress" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("in progress")}
+      >
+        In Progress
+      </button>
+      <button
+        className={`filter-status-btn ${statusFilter === "completed" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("completed")}
+      >
+        Completed
+      </button>
+      <button
+        className={`filter-status-btn ${statusFilter === "on hold" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("on hold")}
+      >
+        On Hold
+      </button>
+      <button
+        className={`filter-status-btn ${statusFilter === "exceed" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("exceed")}
+      >
+        Exceed Projects
+      </button>
+      {/* New Tabs */}
+      <button
+        className={`filter-status-btn ${statusFilter === "short-term" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("short-term")}
+      >
+        Short-term
+      </button>
+      <button
+        className={`filter-status-btn ${statusFilter === "long-term" ? "filter-status-active" : ""}`}
+        onClick={() => setStatusFilter("long-term")}
+      >
+        Long-term
+      </button>
+    </div>
+  </div>
+</div>
+
 
           {/* Your table goes here */}
         </div>
