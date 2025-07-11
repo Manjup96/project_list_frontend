@@ -17,6 +17,7 @@ import "./AdminDashboard.css";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import ProjectChartFiveProjects from "./ProjectChartFiveprojects";
 import ProjectProgressChart from "./ProjectProgressChart";
 
 ChartJS.register(
@@ -727,7 +728,9 @@ const AdminDashboard = () => {
         </div> */}
      
          
-          <ProjectProgressChart />
+        <ProjectChartFiveProjects />
+
+        <ProjectProgressChart />
        
 
         {/* Line Chart Modal */}
