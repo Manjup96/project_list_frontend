@@ -13,7 +13,7 @@ import {
 
 import { baseUrl } from "../APIServices/APIServices";
 
-const ProjectChartFiveProjects = () => {
+const ProjectChartFiveProjects = () => { 
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
@@ -110,12 +110,29 @@ const ProjectChartFiveProjects = () => {
 
   // Rest of your component code remains the same...
 
-  const calculateWeeks = (start, end) => {
+  // const calculateWeeks = (start, end) => {
+  //   if (!start || !end) return 0;
+  //   const startDate = new Date(start);
+  //   const endDate = new Date(end);
+  //   const diffInMs = endDate - startDate;
+  //   return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7)); // convert ms to weeks
+  // };
+
+    const calculateWeeks = (start, end) => {
     if (!start || !end) return 0;
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffInMs = endDate - startDate;
-    return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7)); // convert ms to weeks
+    try {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (isNaN(startDate.getTime())) return 0;
+      if (isNaN(endDate.getTime())) return 0;
+      if (endDate < startDate) return 0;
+      
+      const diffInMs = Math.max(0, endDate - startDate);
+      return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7));
+    } catch (error) {
+      console.error("Date calculation error:", error);
+      return 0;
+    }
   };
 
   const calculateTimelineStatus = (startDate, endDate, actualPercentage, latestUpdate) => {
@@ -205,7 +222,7 @@ const ProjectChartFiveProjects = () => {
               >
                 <XAxis 
                   type="number" 
-                  label={{ value: "Weeks", position: "insideBottom", offset: -5 }} 
+                  label={{ value: "Weeks ( W )", position: "insideBottom", offset: -5 }} 
                 />
                 <YAxis 
                   type="category" 
@@ -223,21 +240,25 @@ const ProjectChartFiveProjects = () => {
                   cursor={{ fill: 'transparent' }}
                 />
                 <Legend />
-                <Bar 
-                  dataKey="actual" 
-                  stackId="a" 
-                  fill="#4bc0c0" 
-                  name="Actual Progress (weeks)"
-                >
-                  <LabelList 
-                    dataKey="actual" 
-                    position={({ actual, planned }) => 
-                      Math.abs(actual - planned) < 2 ? "outside" : "insideRight"
-                    } 
-                    fill="#333"
-                    formatter={(value) => `${value} weeks`}
-                  />
-                </Bar>
+               <Bar 
+                 dataKey="actual" 
+                 stackId="a" 
+                 fill="#4bc0c0" 
+                 name="Actual Progress (weeks)"
+               >
+                 <LabelList 
+                   dataKey="actual" 
+                   position={({ actual, remaining }) => 
+                     Math.abs(actual - remaining) < 2 ? "outside" : "insideRight"
+                   } 
+                   fill="#333"
+                   formatter={(value, entry) => {
+                     // Don't show label if value is 0
+                     if (value === 0 || value === "0") return null;
+                     return `${value} W`;
+                   }}
+                 />
+               </Bar>
                 <Bar 
                   dataKey="planned" 
                   stackId="a" 

@@ -107,31 +107,13 @@ const ProjectProgressChart = () => {
     fetchProjects();
   }, []);
 
-  //   const calculateWeeks = (start, end) => {
-  //   if (!start || !end) return 0;
-  //   const startDate = new Date(start);
-  //   const endDate = new Date(end);
-  //   const diffInMs = endDate - startDate;
-  //   return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7)); // convert ms to weeks
-  // };
-
-   const calculateWeeks = (start, end) => {
+  const calculateWeeks = (start, end) => {
     if (!start || !end) return 0;
-    try {
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-      if (isNaN(startDate.getTime())) return 0;
-      if (isNaN(endDate.getTime())) return 0;
-      if (endDate < startDate) return 0;
-      
-      const diffInMs = Math.max(0, endDate - startDate);
-      return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7));
-    } catch (error) {
-      console.error("Date calculation error:", error);
-      return 0;
-    }
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffInMs = endDate - startDate;
+    return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7)); // convert ms to weeks
   };
-
 
   const calculateTimelineStatus = (startDate, endDate, actualPercentage, latestUpdate) => {
     if (!startDate || !endDate) return "No dates provided";
@@ -202,35 +184,33 @@ const ProjectProgressChart = () => {
   };
 
   return (
-     <div className="col-12 mt-4 d-flex justify-content-center">
-    <div className="card bg-light" style={{ width: "100%", position: 'relative' }}>
-      <div className="card-body">
-        <h5 className="card-title">Project Timeline Overview (Weeks)</h5>
-        <div style={{ width: "100%", height: Math.max(400, projects.length * 30) }}>
-          <ResponsiveContainer>
-            <BarChart
-              layout="vertical"
-              data={projects.map(project => ({
-                project: project.project_name,
-                actual: project.actualWeeks,
-                planned: project.remainingWeeks,
-                timelineStatus: project.timelineStatus
-              }))}
-              margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
-            >
-              <XAxis 
-                type="number" 
-                label={{ value: "Weeks( W )", position: "insideBottom", offset: -5 }}
-                domain={[0, 'dataMax + 5']} // Prevent negative values
-              />
-              <YAxis 
-                type="category" 
-                dataKey="project" 
-                width={150} 
-                tick={{ fontSize: 12 }}
-                interval={0} // Show all labels
-              />
-              <CartesianGrid strokeDasharray="3 3" />
+    <div className="col-12 mt-4 d-flex justify-content-center">
+      <div className="card bg-light" style={{ width: "70%", position: 'relative' }}>
+        <div className="card-body">
+          <h5 className="card-title">Project Timeline Overview (Weeks)</h5>
+          <div style={{ width: "100%", height: 400 }}>
+            <ResponsiveContainer>
+              <BarChart
+                layout="vertical"
+                data={projects.map(project => ({
+                  project: project.project_name,
+                  actual: project.actualWeeks,
+                  planned: project.remainingWeeks,
+                  timelineStatus: project.timelineStatus
+                }))}
+                margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+              >
+                <XAxis 
+                  type="number" 
+                  label={{ value: "Weeks", position: "insideBottom", offset: -5 }} 
+                />
+                <YAxis 
+                  type="category" 
+                  dataKey="project" 
+                  width={150} 
+                  tick={{ fontSize: 12 }}
+                />
+                <CartesianGrid strokeDasharray="3 3" />
                 <Tooltip 
                   content={<CustomTooltip />} 
                   wrapperStyle={{ 
@@ -241,24 +221,20 @@ const ProjectProgressChart = () => {
                 />
                 <Legend />
                 <Bar 
-  dataKey="actual" 
-  stackId="a" 
-  fill="#4bc0c0" 
-  name="Actual Progress (weeks)"
->
-  <LabelList 
-    dataKey="actual" 
-    position={({ actual, remaining }) => 
-      Math.abs(actual - remaining) < 2 ? "outside" : "insideRight"
-    } 
-    fill="#333"
-    formatter={(value, entry) => {
-      // Don't show label if value is 0
-      if (value === 0 || value === "0") return null;
-      return `${value} W`;
-    }}
-  />
-</Bar>
+                  dataKey="actual" 
+                  stackId="a" 
+                  fill="#4bc0c0" 
+                  name="Actual Progress (weeks)"
+                >
+                  <LabelList 
+                    dataKey="actual" 
+                    position={({ actual, planned }) => 
+                      Math.abs(actual - planned) < 2 ? "outside" : "insideRight"
+                    } 
+                    fill="#333"
+                    formatter={(value) => `${value} weeks`}
+                  />
+                </Bar>
                 <Bar 
                   dataKey="planned" 
                   stackId="a" 
@@ -269,7 +245,7 @@ const ProjectProgressChart = () => {
                     dataKey="planned" 
                     position="insideRight" 
                     fill="#fff" 
-                    formatter={(value) => `${value} W`}
+                    formatter={(value) => `${value} weeks`}
                   />
                 </Bar>
               </BarChart>
