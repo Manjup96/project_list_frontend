@@ -15,6 +15,8 @@ import { baseUrl } from "../APIServices/APIServices";
 
 const ProjectProgressChart = () => {
   const [projects, setProjects] = useState([]);
+  const [showAllProjects, setShowAllProjects] = useState(false);
+  const [displayedProjects, setDisplayedProjects] = useState([]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -97,7 +99,12 @@ const ProjectProgressChart = () => {
             };
           });
 
-          setProjects(processedProjects);
+          // Sort projects by latest update date (newest first)
+          const sortedProjects = [...processedProjects].sort((a, b) => b.project_id - a.project_id);
+
+          setProjects(sortedProjects);
+          console.log("Processed projects:", sortedProjects);
+          setDisplayedProjects(sortedProjects.slice(0, 5));
         }
       } catch (error) {
         console.error("Error fetching project data:", error);
@@ -106,8 +113,19 @@ const ProjectProgressChart = () => {
 
     fetchProjects();
   }, []);
+  useEffect(() => {
+    if (showAllProjects) {
+      setDisplayedProjects(projects);
+    } else {
+      setDisplayedProjects(projects.slice(0, 5));
+    }
+  }, [showAllProjects, projects]);
 
-  //   const calculateWeeks = (start, end) => {
+  const toggleShowAllProjects = () => {
+    setShowAllProjects(!showAllProjects);
+  };
+
+   //   const calculateWeeks = (start, end) => {
   //   if (!start || !end) return 0;
   //   const startDate = new Date(start);
   //   const endDate = new Date(end);
@@ -115,7 +133,7 @@ const ProjectProgressChart = () => {
   //   return Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7)); // convert ms to weeks
   // };
 
-   const calculateWeeks = (start, end) => {
+  const calculateWeeks = (start, end) => {
     if (!start || !end) return 0;
     try {
       const startDate = new Date(start);
@@ -131,7 +149,6 @@ const ProjectProgressChart = () => {
       return 0;
     }
   };
-
 
   const calculateTimelineStatus = (startDate, endDate, actualPercentage, latestUpdate) => {
     if (!startDate || !endDate) return "No dates provided";
@@ -160,8 +177,12 @@ const ProjectProgressChart = () => {
 
     const expectedProgress = (project.actualWeeks * project.plannedPercentagePerWeek).toFixed(2);
     const actualProgress = parseFloat(project.status_percentage);
-    const difference = (expectedProgress - actualProgress).toFixed(2);
-
+    const rawDifference = expectedProgress - actualProgress;
+    
+    // Invert the display value but keep raw difference for calculations
+    const displayDifference = (rawDifference).toFixed(2);
+    const isAhead = rawDifference < 0; // Negative raw difference means ahead
+    
     return (
       <div className="custom-tooltip" style={{ 
         backgroundColor: '#fff', 
@@ -179,7 +200,12 @@ const ProjectProgressChart = () => {
         <p style={{ margin: '3px 0' }}>Status: <span style={{ fontWeight: 'bold', color: getStatusColor(project.timelineStatus) }}>{project.timelineStatus}</span></p>
         <p style={{ margin: '3px 0' }}>Expected Progress: <span style={{ fontWeight: 'bold' }}>{expectedProgress}%</span></p>
         <p style={{ margin: '3px 0' }}>Actual Progress: <span style={{ fontWeight: 'bold' }}>{actualProgress}%</span></p>
-        <p style={{ margin: '3px 0' }}>Difference: <span style={{ fontWeight: 'bold', color: difference >= 0 ? 'green' : 'red' }}>{difference}%</span></p>
+        <p style={{ margin: '3px 0' }}>
+          Difference: 
+          <span style={{ fontWeight: 'bold', color: isAhead ? 'green' : 'red' }}>
+            {isAhead ? '+' : '-'}{displayDifference}%
+          </span>
+        </p>
         <p style={{ margin: '3px 0' }}>Planned Duration: <span style={{ fontWeight: 'bold' }}>{project.plannedWeeks} weeks</span></p>
         <p style={{ margin: '3px 0' }}>Planned Progress/Week: <span style={{ fontWeight: 'bold' }}>{project.plannedPercentagePerWeek}%</span></p>
       </div>
@@ -188,7 +214,6 @@ const ProjectProgressChart = () => {
 
   return null;
 };
-
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -202,35 +227,47 @@ const ProjectProgressChart = () => {
   };
 
   return (
-     <div className="col-12 mt-4 d-flex justify-content-center">
-    <div className="card bg-light" style={{ width: "100%", position: 'relative' }}>
-      <div className="card-body">
-        <h5 className="card-title">Project Timeline Overview (Weeks)</h5>
-        <div style={{ width: "100%", height: Math.max(400, projects.length * 30) }}>
-          <ResponsiveContainer>
-            <BarChart
-              layout="vertical"
-              data={projects.map(project => ({
-                project: project.project_name,
-                actual: project.actualWeeks,
-                planned: project.remainingWeeks,
-                timelineStatus: project.timelineStatus
-              }))}
-              margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
-            >
-              <XAxis 
-                type="number" 
-                label={{ value: "Weeks( W )", position: "insideBottom", offset: -5 }}
-                domain={[0, 'dataMax + 5']} // Prevent negative values
-              />
-              <YAxis 
-                type="category" 
-                dataKey="project" 
-                width={150} 
-                tick={{ fontSize: 12 }}
-                interval={0} // Show all labels
-              />
-              <CartesianGrid strokeDasharray="3 3" />
+    <div className="col-12 mt-4 d-flex justify-content-center">
+      <div className="card bg-light" style={{ width: "100%", position: 'relative' }}>
+        <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+  <div className="flex-grow-1 text-center">
+    <h5 className="card-title mb-0">Project Timeline Overview (Weeks)</h5>
+  </div>
+  {projects.length > 5 && (
+    <button 
+      onClick={toggleShowAllProjects}
+      className="btn btn-sm btn-outline-primary"
+    >
+      {showAllProjects ? 'Show Less' : 'Expand'}
+    </button>
+  )}
+</div>
+          <div style={{ width: "100%", height: Math.max(400, displayedProjects.length * 30) }}>
+            <ResponsiveContainer>
+              <BarChart
+                layout="vertical"
+                data={displayedProjects.map(project => ({
+                  project: project.project_name,
+                  actual: project.actualWeeks,
+                  planned: project.remainingWeeks,
+                  timelineStatus: project.timelineStatus
+                }))}
+                margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+              >
+                <XAxis 
+                  type="number" 
+                  label={{ value: "Weeks( W )", position: "insideBottom", offset: -5 }}
+                  domain={[0, 'dataMax + 5']} // Prevent negative values
+                />
+                <YAxis 
+                  type="category" 
+                  dataKey="project" 
+                  width={150} 
+                  tick={{ fontSize: 12 }}
+                  interval={0} // Show all labels
+                />
+                <CartesianGrid strokeDasharray="3 3" />
                 <Tooltip 
                   content={<CustomTooltip />} 
                   wrapperStyle={{ 
@@ -241,24 +278,24 @@ const ProjectProgressChart = () => {
                 />
                 <Legend />
                 <Bar 
-  dataKey="actual" 
-  stackId="a" 
-  fill="#4bc0c0" 
-  name="Actual Progress (weeks)"
->
-  <LabelList 
-    dataKey="actual" 
-    position={({ actual, remaining }) => 
-      Math.abs(actual - remaining) < 2 ? "outside" : "insideRight"
-    } 
-    fill="#333"
-    formatter={(value, entry) => {
-      // Don't show label if value is 0
-      if (value === 0 || value === "0") return null;
-      return `${value} W`;
-    }}
-  />
-</Bar>
+                  dataKey="actual" 
+                  stackId="a" 
+                  fill="#4bc0c0" 
+                  name="Actual Progress (weeks)"
+                >
+                  <LabelList 
+                    dataKey="actual" 
+                    position={({ actual, remaining }) => 
+                      Math.abs(actual - remaining) < 2 ? "outside" : "insideRight"
+                    } 
+                    fill="#333"
+                    formatter={(value, entry) => {
+                      // Don't show label if value is 0
+                      if (value === 0 || value === "0") return null;
+                      return `${value}`;
+                    }}
+                  />
+                </Bar>
                 <Bar 
                   dataKey="planned" 
                   stackId="a" 
@@ -269,7 +306,11 @@ const ProjectProgressChart = () => {
                     dataKey="planned" 
                     position="insideRight" 
                     fill="#fff" 
-                    formatter={(value) => `${value} W`}
+                    formatter={(value, entry) => {
+                      // Don't show label if value is 0
+                      if (value === 0 || value === "0") return null;
+                      return `${value}`;
+                    }}
                   />
                 </Bar>
               </BarChart>

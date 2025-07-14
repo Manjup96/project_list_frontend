@@ -162,7 +162,11 @@ const ProjectChartFiveProjects = () => {
 
     const expectedProgress = (project.actualWeeks * project.plannedPercentagePerWeek).toFixed(2);
     const actualProgress = parseFloat(project.status_percentage);
-    const difference = (expectedProgress - actualProgress).toFixed(2);
+     const rawDifference = expectedProgress - actualProgress;
+    
+    // Invert the display value but keep raw difference for calculations
+    const displayDifference = (rawDifference).toFixed(2);
+    const isAhead = rawDifference < 0; // Negative raw difference means ahead
 
     return (
       <div className="custom-tooltip" style={{ 
@@ -181,7 +185,12 @@ const ProjectChartFiveProjects = () => {
         <p style={{ margin: '3px 0' }}>Status: <span style={{ fontWeight: 'bold', color: getStatusColor(project.timelineStatus) }}>{project.timelineStatus}</span></p>
         <p style={{ margin: '3px 0' }}>Expected Progress: <span style={{ fontWeight: 'bold' }}>{expectedProgress}%</span></p>
         <p style={{ margin: '3px 0' }}>Actual Progress: <span style={{ fontWeight: 'bold' }}>{actualProgress}%</span></p>
-        <p style={{ margin: '3px 0' }}>Difference: <span style={{ fontWeight: 'bold', color: difference >= 0 ? 'green' : 'red' }}>{difference}%</span></p>
+        <p style={{ margin: '3px 0' }}>
+          Difference: 
+          <span style={{ fontWeight: 'bold', color: isAhead ? 'green' : 'red' }}>
+            {isAhead ? '+' : '-'}{displayDifference}%
+          </span>
+        </p>
         <p style={{ margin: '3px 0' }}>Planned Duration: <span style={{ fontWeight: 'bold' }}>{project.plannedWeeks} weeks</span></p>
         <p style={{ margin: '3px 0' }}>Planned Progress/Week: <span style={{ fontWeight: 'bold' }}>{project.plannedPercentagePerWeek}%</span></p>
       </div>
@@ -269,7 +278,11 @@ const ProjectChartFiveProjects = () => {
                     dataKey="planned" 
                     position="insideRight" 
                     fill="#fff" 
-                    formatter={(value) => `${value} weeks`}
+                                    formatter={(value, entry) => {
+      // Don't show label if value is 0
+      if (value === 0 || value === "0") return null;
+      return `${value} Weeks`;
+    }}
                   />
                 </Bar>
               </BarChart>
