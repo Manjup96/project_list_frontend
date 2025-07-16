@@ -260,14 +260,36 @@ const ProjectDetails = () => {
   };
 
   // Filter projects based on the search query
+// const filteredProjects = projects.filter((project) => {
+//   const matchesSearch =
+//     project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//     project.primary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//     project.secondary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//     project.tester_name.toLowerCase().includes(searchQuery.toLowerCase());
+
+//    const matchesStatus =
+//     statusFilter === "all"
+//       ? true
+//       : statusFilter === "exceed"
+//       ? new Date(project.client_end_date) < new Date()
+//       : statusFilter === "short-term"
+//       ? project.technology_partner === "Short-Term Project"
+//       : statusFilter === "long-term"
+//       ? project.technology_partner === "Long-Term Collaboration"
+//       : project.status &&
+//         project.status.toLowerCase() === statusFilter.toLowerCase();
+
+//   return matchesSearch && matchesStatus;
+// });
 const filteredProjects = projects.filter((project) => {
   const matchesSearch =
-    project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.primary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.secondary_team_lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.tester_name.toLowerCase().includes(searchQuery.toLowerCase());
+    (project.project_name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (project.primary_team_lead ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (project.secondary_team_lead ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (project.tester_name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (project.status ?? "").toLowerCase().includes(searchQuery.toLowerCase());
 
-   const matchesStatus =
+  const matchesStatus =
     statusFilter === "all"
       ? true
       : statusFilter === "exceed"
@@ -276,8 +298,7 @@ const filteredProjects = projects.filter((project) => {
       ? project.technology_partner === "Short-Term Project"
       : statusFilter === "long-term"
       ? project.technology_partner === "Long-Term Collaboration"
-      : project.status &&
-        project.status.toLowerCase() === statusFilter.toLowerCase();
+      : (project.status ?? "").toLowerCase() === statusFilter.toLowerCase();
 
   return matchesSearch && matchesStatus;
 });
