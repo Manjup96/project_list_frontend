@@ -303,6 +303,17 @@ const filteredProjects = projects.filter((project) => {
   return matchesSearch && matchesStatus;
 });
 
+const statusCounts = {
+  all: projects.length,
+  "in progress": projects.filter(p => (p.status ?? "").toLowerCase() === "in progress").length,
+  completed: projects.filter(p => (p.status ?? "").toLowerCase() === "completed").length,
+  "on hold": projects.filter(p => (p.status ?? "").toLowerCase() === "on hold").length,
+  exceed: projects.filter(p => new Date(p.client_end_date) < new Date()).length,
+  "short-term": projects.filter(p => (p.technology_partner ?? "").toLowerCase() === "short-term project").length,
+  "long-term": projects.filter(p => (p.technology_partner ?? "").toLowerCase() === "long-term collaboration").length,
+};
+
+
 
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState("");
@@ -468,55 +479,55 @@ const filteredProjects = projects.filter((project) => {
           </div>
 
           {/* Status Filter Buttons - Centered */}
-         <div className="row mb-4">
+<div className="row mb-4">
   <div className="col-md-12 text-center">
     <div className="filter-status-group" role="group">
       <button
         className={`filter-status-btn ${statusFilter === "all" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("all")}
       >
-        All
+        All ({statusCounts.all})
       </button>
       <button
         className={`filter-status-btn ${statusFilter === "in progress" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("in progress")}
       >
-        In Progress
+        In Progress ({statusCounts["in progress"]})
       </button>
       <button
         className={`filter-status-btn ${statusFilter === "completed" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("completed")}
       >
-        Completed
+        Completed ({statusCounts.completed})
       </button>
       <button
         className={`filter-status-btn ${statusFilter === "on hold" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("on hold")}
       >
-        On Hold
+        On Hold ({statusCounts["on hold"]})
       </button>
       <button
         className={`filter-status-btn ${statusFilter === "exceed" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("exceed")}
       >
-        Exceed Projects
+        Exceed Projects ({statusCounts.exceed})
       </button>
-      {/* New Tabs */}
       <button
         className={`filter-status-btn ${statusFilter === "short-term" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("short-term")}
       >
-        Short-term
+        Short-term ({statusCounts["short-term"]})
       </button>
       <button
         className={`filter-status-btn ${statusFilter === "long-term" ? "filter-status-active" : ""}`}
         onClick={() => setStatusFilter("long-term")}
       >
-        Long-term
+        Long-term ({statusCounts["long-term"]})
       </button>
     </div>
   </div>
 </div>
+
 
 
           {/* Your table goes here */}

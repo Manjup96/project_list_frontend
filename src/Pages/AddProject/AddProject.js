@@ -131,16 +131,21 @@ const AddProject = () => {
                     Application/Website
                   </label>
                   <div className="dropdown">
-                    <button
-                      className="form-control text-start dropdown-toggle"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      {formData.application_type.length > 0
-                        ? formData.application_type.join(", ")
-                        : "-- Select Type --"}
-                    </button>
+                   <button
+  className="form-control text-start dropdown-toggle"
+  type="button"
+  data-bs-toggle="dropdown"
+  aria-expanded="false"
+  style={{
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis"
+  }}
+>
+  {formData.application_type.length > 0
+    ? formData.application_type.join(", ")
+    : "-- Select Type --"}
+</button>
                     <ul
                       className="dropdown-menu w-100 p-2"
                       style={{ maxHeight: "200px", overflowY: "auto" }}

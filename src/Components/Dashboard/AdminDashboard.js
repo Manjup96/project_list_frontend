@@ -172,11 +172,20 @@ const AdminDashboard = () => {
     fetchComments(project.project_id);
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [hasUnseenComments, setHasUnseenComments] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentModal, setShowCommentModal] = useState(false);
+    const filteredProjects = projects.filter((project) =>
+  project.project_name.toLowerCase().includes(searchTerm.toLowerCase())
+    
+);
+
+const displayedProjectss = showAllProjects ? filteredProjects : filteredProjects.slice(0, 8);
+
+
 
   // const handleSubmitResponse = () => {
   //   if (!responseText) {
@@ -669,8 +678,18 @@ const AdminDashboard = () => {
 
         {/* Dynamic Project Cards */}
         <div className="AdminDashboard-cards2 row justify-content-center mt-3">
+          <div className="d-flex justify-content-center mb-3">
+  <input
+    type="text"
+    className="form-control w-50"
+    placeholder="Search project by name..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+</div>
+
           <h2 className="text-center">Project Status</h2>
-          {displayedProjects.map((project, index) => {
+          {displayedProjectss.map((project, index) => {
             const colorClass = colors[index % colors.length];
             const displayText =
               project.status.toLowerCase() === "in progress"
